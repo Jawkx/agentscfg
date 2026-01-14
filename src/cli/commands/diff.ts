@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { loadWorkspace, validateWorkspace } from "../../core/model/workspace";
 import { planWorkspace } from "../../core/planner/plan";
 import { renderDiff } from "../../core/planner/diff";
-import { PlanOptions } from "../../core/model/plan";
+import type { PlanOptions } from "../../core/model/plan";
 
 export const diffCommand = (repoRoot: string, options: PlanOptions) =>
   Effect.gen(function* (_) {

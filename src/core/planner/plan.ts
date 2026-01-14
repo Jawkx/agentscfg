@@ -1,9 +1,10 @@
 import path from "node:path";
 import { Effect } from "effect";
 import { compileInstructions } from "../compile/instructions";
-import { Workspace } from "../model/workspace";
-import { Plan, PlanOp, PlanOptions, TargetName, CopyFileOp } from "../model/plan";
-import { ResolvedAgentCfg } from "../model/config";
+import type { Workspace } from "../model/workspace";
+import type { Plan, PlanOp, PlanOptions, TargetName, CopyFileOp } from "../model/plan";
+import type { ResolvedAgentCfg } from "../model/config";
+import type { IoError } from "../model/errors";
 import { exists, readFileString, readdir, stat } from "../../io/fs";
 import { sha256File } from "../../io/hash";
 import { extractMarkerSha } from "../managed/marker";
@@ -58,10 +59,14 @@ const applyNewlines = (input: string, mode: "lf" | "crlf") =>
 const ensureTrailingNewline = (input: string) =>
   input.endsWith("\n") ? input : `${input}\n`;
 
+type WalkFileEntry = { rel: string; abs: string; mode: number };
 
-const walkFiles = (dirPath: string, baseRel = "") =>
+const walkFiles = (
+  dirPath: string,
+  baseRel = ""
+): Effect.Effect<WalkFileEntry[], IoError, never> =>
   Effect.gen(function* (_) {
-    const results: { rel: string; abs: string; mode: number }[] = [];
+    const results: WalkFileEntry[] = [];
     if (!(yield* _(exists(dirPath)))) {
       return results;
     }
@@ -173,7 +178,7 @@ const diffDir = (
   sourceDir: string,
   targetDir: string,
   remove: boolean
-) =>
+): Effect.Effect<CopyFileOp[], IoError, never> =>
   Effect.gen(function* (_) {
     const sourceFiles = yield* _(walkFiles(sourceDir));
     const destFiles = yield* _(walkFiles(targetDir));

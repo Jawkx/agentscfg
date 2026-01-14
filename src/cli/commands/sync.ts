@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { loadWorkspace, validateWorkspace } from "../../core/model/workspace";
 import { planWorkspace } from "../../core/planner/plan";
 import { applyPlan } from "../../core/planner/apply";
-import { PlanOptions } from "../../core/model/plan";
+import type { PlanOptions } from "../../core/model/plan";
 import { isDirty, isGitRepo } from "../../io/git";
 import { DirtyRepoError } from "../../core/model/errors";
 

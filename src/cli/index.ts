@@ -7,7 +7,7 @@ import { diffCommand } from "./commands/diff";
 import { syncCommand } from "./commands/sync";
 import { doctorCommand } from "./commands/doctor";
 import { renderPlanSummary, renderWarnings, renderDoctorReport } from "./render";
-import { PlanOptions, TargetName } from "../core/model/plan";
+import type { PlanOptions, TargetName } from "../core/model/plan";
 import { error, info } from "../io/console";
 
 const parseArgs = (argv: string[]) => {
@@ -20,10 +20,13 @@ const parseArgs = (argv: string[]) => {
     const current = args.shift()!;
     if (current.startsWith("--")) {
       const [flag, value] = current.split("=");
+      if (!flag) {
+        continue;
+      }
       if (value !== undefined) {
         flags[flag] = value;
       } else if (args[0] && !args[0].startsWith("--")) {
-        if (["--to"].includes(flag)) {
+        if (flag === "--to") {
           flags[flag] = args.shift()!;
         } else {
           flags[flag] = true;

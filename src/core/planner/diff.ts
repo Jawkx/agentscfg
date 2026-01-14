@@ -1,7 +1,7 @@
 import path from "node:path";
 import { Effect } from "effect";
 import { createTwoFilesPatch } from "diff";
-import { Plan } from "../model/plan";
+import type { Plan } from "../model/plan";
 import { readFileString, exists } from "../../io/fs";
 
 const renderCopyFiles = (from: string, to: string, files: { kind: string; rel: string }[]) => {

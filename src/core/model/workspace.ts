@@ -3,7 +3,7 @@ import { parse as parseJsonc } from "jsonc-parser";
 import path from "node:path";
 import { readFileString, exists, readdir } from "../../io/fs";
 import { InvalidConfig, InvalidSkill, WorkspaceMissing } from "./errors";
-import { AgentCfgSchema, ResolvedAgentCfg, withDefaults } from "./config";
+import { AgentCfgSchema, withDefaults, type ResolvedAgentCfg } from "./config";
 import { isExcludedPath } from "../planner/skills";
 
 export type InstructionSources = {

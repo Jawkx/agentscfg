@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { Plan, PlanOptions } from "../model/plan";
+import type { Plan, PlanOptions } from "../model/plan";
 import { copyFile, mkdirp, rm, writeFileAtomic } from "../../io/fs";
 
 export const applyPlan = (plan: Plan, options: PlanOptions) =>

@@ -1,6 +1,6 @@
 import path from "node:path";
-import { Plan } from "../core/model/plan";
-import { DoctorReport } from "./commands/doctor";
+import type { Plan } from "../core/model/plan";
+import type { DoctorReport } from "./commands/doctor";
 
 export const renderPlanSummary = (plan: Plan) => {
   const counts = {

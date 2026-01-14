@@ -1,6 +1,6 @@
 import { Effect } from "effect";
-import { ResolvedAgentCfg } from "../model/config";
-import { InstructionSources } from "../model/workspace";
+import type { ResolvedAgentCfg } from "../model/config";
+import type { InstructionSources } from "../model/workspace";
 import { sha256String } from "../../io/hash";
 
 const normalizeLf = (input: string) => input.replace(/\r\n?/g, "\n");

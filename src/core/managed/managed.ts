@@ -17,10 +17,13 @@ export const defaultManaged = (): ManagedFile => ({
   managed: [
     "CLAUDE.md",
     "AGENTS.md",
-    ".opencode/agent/default.md",
-    ".claude/skills/**",
-    ".opencode/skill/**",
-    ".codex/skills/**"
+    ".claude/settings.json",
+    ".codex/config.toml",
+    "opencode.json",
+    ".mcp.json",
+    ".claude/**",
+    ".opencode/**",
+    ".codex/**"
   ],
   adopted: {}
 });

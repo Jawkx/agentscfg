@@ -16,31 +16,47 @@ import {
 } from "../managed/managed";
 import {
   claudeInstructionPath,
-  claudeSkillsRoot
+  claudeSkillsRoot,
+  claudeSettingsPath
 } from "../../adapters/claude";
 import {
   codexInstructionPath,
-  codexSkillsRoot
+  codexSkillsRoot,
+  codexConfigPath
 } from "../../adapters/codex";
 import {
   opencodeInstructionPath,
   opencodeSkillsRoot,
-  opencodeClaudeCompatSkillsRoot
+  opencodeClaudeCompatSkillsRoot,
+  opencodeSettingsPath
 } from "../../adapters/opencode";
+import { mcpConfigPath } from "../../adapters/mcp";
 import { shouldIncludePath } from "./skills";
 
-const expectedInstructionPaths = (repoRoot: string) =>
+const expectedOutputPaths = (repoRoot: string) =>
   new Set([
     claudeInstructionPath(repoRoot),
     codexInstructionPath(repoRoot),
-    opencodeInstructionPath(repoRoot)
+    opencodeInstructionPath(repoRoot),
+    claudeSettingsPath(repoRoot),
+    opencodeSettingsPath(repoRoot),
+    codexConfigPath(repoRoot),
+    mcpConfigPath(repoRoot)
   ]);
 
-const isExpectedInstruction = (repoRoot: string, targetPath: string) =>
-  expectedInstructionPaths(repoRoot).has(targetPath);
+const isExpectedOutput = (repoRoot: string, targetPath: string) =>
+  expectedOutputPaths(repoRoot).has(targetPath);
 
 const normalizeRel = (repoRoot: string, targetPath: string) =>
   path.relative(repoRoot, targetPath).replace(/\\/g, "/");
+
+const normalizeLf = (input: string) => input.replace(/\r\n?/g, "\n");
+
+const applyNewlines = (input: string, mode: "lf" | "crlf") =>
+  mode === "crlf" ? input.replace(/\n/g, "\r\n") : input;
+
+const ensureTrailingNewline = (input: string) =>
+  input.endsWith("\n") ? input : `${input}\n`;
 
 
 const walkFiles = (dirPath: string, baseRel = "") =>
@@ -95,7 +111,7 @@ const planWriteFile = (
       ? isManagedPath(repoRoot, targetPath, managedData)
       : false;
 
-    const expected = isExpectedInstruction(repoRoot, targetPath);
+    const expected = isExpectedOutput(repoRoot, targetPath);
     const canAdopt = expected && (options.adopt || markerSha !== null);
 
     if (existsNow && current === content) {
@@ -153,7 +169,7 @@ const buildSkillTargets = (
   );
 };
 
-const diffSkillDir = (
+const diffDir = (
   sourceDir: string,
   targetDir: string,
   remove: boolean
@@ -243,6 +259,38 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
       })
     );
 
+    const normalizeOutputContent = (input: string) =>
+      applyNewlines(
+        ensureTrailingNewline(normalizeLf(input)),
+        ws.cfg.output.newlines
+      );
+
+    const extraOutputs: { path: string; content: string }[] = [];
+    if (targets.has("claude") && ws.targets.claudeSettings) {
+      extraOutputs.push({
+        path: claudeSettingsPath(ws.repoRoot),
+        content: normalizeOutputContent(ws.targets.claudeSettings.content)
+      });
+    }
+    if (targets.has("opencode") && ws.targets.opencodeSettings) {
+      extraOutputs.push({
+        path: opencodeSettingsPath(ws.repoRoot),
+        content: normalizeOutputContent(ws.targets.opencodeSettings.content)
+      });
+    }
+    if (targets.has("codex") && ws.targets.codexConfig) {
+      extraOutputs.push({
+        path: codexConfigPath(ws.repoRoot),
+        content: normalizeOutputContent(ws.targets.codexConfig.content)
+      });
+    }
+    if (ws.mcp && targets.size > 0) {
+      extraOutputs.push({
+        path: mcpConfigPath(ws.repoRoot),
+        content: normalizeOutputContent(ws.mcp.content)
+      });
+    }
+
     const warnings: string[] = [];
     const ops: PlanOp[] = [];
     const mkdirs = new Set<string>();
@@ -256,6 +304,27 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
           output.path,
           output.content,
           output.sha,
+          options
+        )
+      );
+      warnings.push(...result.warnings);
+      if (result.op) {
+        mkdirs.add(path.dirname(output.path));
+        ops.push(result.op);
+      }
+      if (result.adopted) {
+        adopted.push(output.path);
+      }
+    }
+
+    for (const output of extraOutputs) {
+      const result = yield* _(
+        planWriteFile(
+          ws.repoRoot,
+          managedData ?? null,
+          output.path,
+          output.content,
+          undefined,
           options
         )
       );
@@ -294,7 +363,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
           continue;
         }
 
-        const diffOps = yield* _(diffSkillDir(skill.dir, destDir, !!options.remove));
+        const diffOps = yield* _(diffDir(skill.dir, destDir, !!options.remove));
         if (diffOps.length > 0) {
           mkdirs.add(destDir);
           ops.push({
@@ -304,6 +373,60 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
             files: diffOps
           });
         }
+      }
+    }
+
+    const targetDirMappings = [
+      {
+        name: "claude" as TargetName,
+        source: path.join(ws.root, "targets", "claude"),
+        dest: path.join(ws.repoRoot, ".claude")
+      },
+      {
+        name: "opencode" as TargetName,
+        source: path.join(ws.root, "targets", "opencode"),
+        dest: path.join(ws.repoRoot, ".opencode")
+      },
+      {
+        name: "codex" as TargetName,
+        source: path.join(ws.root, "targets", "codex"),
+        dest: path.join(ws.repoRoot, ".codex")
+      }
+    ];
+
+    for (const mapping of targetDirMappings) {
+      if (!targets.has(mapping.name)) continue;
+      if (!(yield* _(exists(mapping.source)))) continue;
+
+      const destExists = yield* _(exists(mapping.dest));
+      const managed = managedData
+        ? isManagedPath(ws.repoRoot, mapping.dest, managedData)
+        : false;
+      if (destExists && managedData && !managed) {
+        warnings.push(
+          `Skipping ${normalizeRel(ws.repoRoot, mapping.dest)}: not managed.`
+        );
+        continue;
+      }
+      if (destExists && !managedData) {
+        warnings.push(
+          `Managed tracking missing for ${normalizeRel(
+            ws.repoRoot,
+            mapping.dest
+          )}. Run sync with --adopt to establish ownership.`
+        );
+        continue;
+      }
+
+      const diffOps = yield* _(diffDir(mapping.source, mapping.dest, !!options.remove));
+      if (diffOps.length > 0) {
+        mkdirs.add(mapping.dest);
+        ops.push({
+          type: "CopyDir",
+          from: mapping.source,
+          to: mapping.dest,
+          files: diffOps
+        });
       }
     }
 

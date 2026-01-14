@@ -25,6 +25,12 @@ export type Workspace = {
   cfg: ResolvedAgentCfg;
   instructions: InstructionSources;
   skills: SkillSource[];
+  targets: {
+    claudeSettings?: { path: string; content: string };
+    opencodeSettings?: { path: string; content: string };
+    codexConfig?: { path: string; content: string };
+  };
+  mcp?: { path: string; content: string };
 };
 
 const parseConfig = (raw: string, pathLabel: string) =>
@@ -52,6 +58,12 @@ export const loadWorkspace = (repoRoot: string) => {
   const basePath = path.join(root, "instructions", "BASE.md");
   const projectPath = path.join(root, "instructions", "PROJECT.md");
   const skillsRoot = path.join(root, "skills");
+  const targetsRoot = path.join(root, "targets");
+  const mcpRoot = path.join(root, "mcp");
+  const claudeSettingsPath = path.join(targetsRoot, "claude.settings.json");
+  const opencodeSettingsPath = path.join(targetsRoot, "opencode.json");
+  const codexConfigPath = path.join(targetsRoot, "codex.config.toml");
+  const mcpPath = path.join(mcpRoot, "mcp.json");
 
   return Effect.gen(function* (_) {
     const rootExists = yield* _(exists(root));
@@ -99,6 +111,39 @@ export const loadWorkspace = (repoRoot: string) => {
       }
     }
 
+    const targets = {
+      claudeSettings: undefined as Workspace["targets"]["claudeSettings"],
+      opencodeSettings: undefined as Workspace["targets"]["opencodeSettings"],
+      codexConfig: undefined as Workspace["targets"]["codexConfig"]
+    };
+
+    if (yield* _(exists(claudeSettingsPath))) {
+      targets.claudeSettings = {
+        path: claudeSettingsPath,
+        content: yield* _(readFileString(claudeSettingsPath))
+      };
+    }
+    if (yield* _(exists(opencodeSettingsPath))) {
+      targets.opencodeSettings = {
+        path: opencodeSettingsPath,
+        content: yield* _(readFileString(opencodeSettingsPath))
+      };
+    }
+    if (yield* _(exists(codexConfigPath))) {
+      targets.codexConfig = {
+        path: codexConfigPath,
+        content: yield* _(readFileString(codexConfigPath))
+      };
+    }
+
+    let mcp: Workspace["mcp"] = undefined;
+    if (yield* _(exists(mcpPath))) {
+      mcp = {
+        path: mcpPath,
+        content: yield* _(readFileString(mcpPath))
+      };
+    }
+
     return {
       repoRoot,
       root,
@@ -110,7 +155,9 @@ export const loadWorkspace = (repoRoot: string) => {
         base,
         project
       },
-      skills
+      skills,
+      targets,
+      mcp
     } satisfies Workspace;
   });
 };

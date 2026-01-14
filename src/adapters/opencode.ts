@@ -8,3 +8,6 @@ export const opencodeSkillsRoot = (repoRoot: string) =>
 
 export const opencodeClaudeCompatSkillsRoot = (repoRoot: string) =>
   path.join(repoRoot, ".claude", "skills");
+
+export const opencodeSettingsPath = (repoRoot: string) =>
+  path.join(repoRoot, "opencode.json");

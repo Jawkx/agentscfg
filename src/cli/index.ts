@@ -9,13 +9,15 @@ import { genCommand } from "./commands/gen";
 import { doctorCommand } from "./commands/doctor";
 import { statusCommand } from "./commands/status";
 import { cleanCommand } from "./commands/clean";
+import { importCommand } from "./commands/import";
 import {
   renderPlanSummary,
   renderWarnings,
   renderDoctorReport,
   renderStatusReport,
   renderCleanResult,
-  renderGenSummary
+  renderGenSummary,
+  renderImportSummary
 } from "./render";
 import { parseArgs, buildOptions } from "./args";
 import { getHelp } from "./help";
@@ -158,6 +160,15 @@ const run = async () => {
     case "doctor": {
       const report = await doctorCommand(repoRoot).pipe(Effect.runPromise);
       info(renderDoctorReport(report));
+      return;
+    }
+    case "import": {
+      const result = await importCommand(repoRoot, flags["--from"]).pipe(
+        Effect.runPromise
+      );
+      info(renderImportSummary(result));
+      const warnings = renderWarnings(result.warnings);
+      if (warnings) info(warnings);
       return;
     }
     case "help":

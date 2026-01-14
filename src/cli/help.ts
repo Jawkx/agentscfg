@@ -9,6 +9,7 @@ Commands:
   plan        Show what gen would do without making changes
   diff        Show file diffs for planned changes
   gen         Apply planned changes to target files
+  import      Import config from an existing agent setup
   clean       Remove all generated files
   doctor      Diagnose workspace health
   version     Show CLI version
@@ -113,6 +114,20 @@ Checks for:
 Example:
   agentscfg doctor`;
 
+export const IMPORT_HELP = `agentscfg import - Import config from an existing agent setup
+
+Usage: agentscfg import --from <tool>
+
+Options:
+  --from <tool>  Source tool: claude, opencode, codex
+
+Imports instructions, skills, targets, and MCP config into .agentscfg/.
+Requires an existing .agentscfg/ workspace (run agentscfg init).
+
+Examples:
+  agentscfg import --from codex
+  agentscfg import --from claude`;
+
 export const STATUS_HELP = `agentscfg status - Show generation status at a glance
 
 Usage: agentscfg status [options]
@@ -164,6 +179,7 @@ export const COMMAND_HELP: Record<string, string> = {
   plan: PLAN_HELP,
   diff: DIFF_HELP,
   gen: GEN_HELP,
+  import: IMPORT_HELP,
   clean: CLEAN_HELP,
   doctor: DOCTOR_HELP,
   version: VERSION_HELP

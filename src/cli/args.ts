@@ -6,6 +6,8 @@ export type ParsedArgs = {
   positionals: string[];
 };
 
+const FLAGS_WITH_VALUES = new Set(["--to", "--from"]);
+
 export const parseArgs = (argv: string[]): ParsedArgs => {
   const args = [...argv];
   const command = args.shift() ?? "help";
@@ -22,7 +24,7 @@ export const parseArgs = (argv: string[]): ParsedArgs => {
       if (value !== undefined) {
         flags[flag] = value;
       } else if (args[0] && !args[0].startsWith("--")) {
-        if (flag === "--to") {
+        if (FLAGS_WITH_VALUES.has(flag)) {
           flags[flag] = args.shift()!;
         } else {
           flags[flag] = true;

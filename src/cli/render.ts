@@ -3,6 +3,7 @@ import type { Plan } from "../core/model/plan";
 import type { DoctorReport } from "./commands/doctor";
 import type { StatusReport, FileStatus } from "./commands/status";
 import type { CleanResult } from "./commands/clean";
+import type { ImportResult } from "./commands/import";
 import { green, yellow, red, cyan, dim, bold } from "../io/console";
 
 export const renderPlanSummary = (plan: Plan) => {
@@ -201,6 +202,32 @@ export const renderDoctorReport = (report: DoctorReport) => {
           : red("missing");
     lines.push(`  ${icon} ${rel} ${dim(`(${statusLabel})`)}`);
   }
+
+  return lines.join("\n");
+};
+
+export const renderImportSummary = (result: ImportResult) => {
+  const lines: string[] = [];
+  lines.push(green(`✓ Imported from ${result.from}`));
+
+  const instructionParts = ["BASE.md"];
+  if (result.instructions.project) instructionParts.push("PROJECT.md");
+  lines.push(cyan(`  ○ instructions: ${instructionParts.join(", ")}`));
+
+  lines.push(
+    cyan(
+      `  ○ skills: ${result.skills.files} file${result.skills.files === 1 ? "" : "s"}`
+    )
+  );
+  lines.push(
+    cyan(
+      `  ○ targets: ${result.targets.files} file${result.targets.files === 1 ? "" : "s"}`
+    )
+  );
+
+  lines.push(
+    cyan(`  ○ mcp: ${result.mcp.copied ? "copied" : "not found"}`)
+  );
 
   return lines.join("\n");
 };

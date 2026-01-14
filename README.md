@@ -20,6 +20,7 @@ agentscfg init
 agentscfg plan
 agentscfg diff
 agentscfg gen
+agentscfg import --from codex
 ```
 
 ## Commands
@@ -30,6 +31,7 @@ validate
 plan [--to claude,opencode,codex] [--json]
 diff [--to ...]
 gen [--to ...] [--remove] [--adopt] [--force] [--allow-dirty]
+import --from <tool>
 doctor
 ```
 

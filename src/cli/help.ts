@@ -11,6 +11,7 @@ Commands:
   gen         Apply planned changes to target files
   clean       Remove all generated files
   doctor      Diagnose workspace health
+  version     Show CLI version
 
 Run 'agentscfg <command> --help' for command-specific help.`;
 
@@ -147,6 +148,15 @@ Examples:
   agentscfg clean --dry-run
   agentscfg clean`;
 
+export const VERSION_HELP = `agentscfg version - Show CLI version
+
+Usage: agentscfg version
+
+Displays the current version of the agentscfg CLI.
+
+Example:
+  agentscfg version`;
+
 export const COMMAND_HELP: Record<string, string> = {
   init: INIT_HELP,
   validate: VALIDATE_HELP,
@@ -155,7 +165,8 @@ export const COMMAND_HELP: Record<string, string> = {
   diff: DIFF_HELP,
   gen: GEN_HELP,
   clean: CLEAN_HELP,
-  doctor: DOCTOR_HELP
+  doctor: DOCTOR_HELP,
+  version: VERSION_HELP
 };
 
 export const getHelp = (command?: string): string => {

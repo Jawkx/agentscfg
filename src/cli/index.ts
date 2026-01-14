@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import { findRepoRoot } from "../io/repo";
+import { version } from "../../package.json";
 import { initCommand } from "./commands/init";
 import { validateCommand } from "./commands/validate";
 import { planCommand } from "./commands/plan";
@@ -73,6 +74,12 @@ const run = async () => {
   // Show help for --help flag on any command
   if (flags["--help"]) {
     info(getHelp(command));
+    return;
+  }
+
+  // version doesn't need repo root
+  if (command === "version") {
+    info(`agentscfg v${version}`);
     return;
   }
 

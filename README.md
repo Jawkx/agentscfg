@@ -77,3 +77,15 @@ doctor
 
 - v0.1 is repo-only (no global/HOME sync).
 - `agentcfg init` creates a starter `.agentcfg/` workspace.
+
+## Tips
+
+- The following paths are managed by agentcfg. Add them to `.gitignore` and use `agentcfg sync` to regenerate them:
+
+```text
+.claude/
+.codex/
+.opencode/
+AGENTS.md
+CLAUDE.md
+```

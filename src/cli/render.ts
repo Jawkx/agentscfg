@@ -37,7 +37,7 @@ export const renderWarnings = (warnings: string[]) =>
     ? `${yellow("Warnings:")}\n${warnings.map((w) => yellow(`  - ${w}`)).join("\n")}`
     : "";
 
-export const renderSyncSummary = (plan: Plan) => {
+export const renderGenSummary = (plan: Plan) => {
   const lines: string[] = [];
   const writeOps = plan.ops.filter((op) => op.type === "WriteFile");
   const copyOps = plan.ops.filter((op) => op.type === "CopyDir");

@@ -3,8 +3,8 @@ import { parseArgs, parseTargets, buildOptions } from "./args";
 
 describe("parseArgs", () => {
   test("parses command only", () => {
-    const result = parseArgs(["sync"]);
-    expect(result.command).toBe("sync");
+    const result = parseArgs(["gen"]);
+    expect(result.command).toBe("gen");
     expect(result.flags).toEqual({});
     expect(result.positionals).toEqual([]);
   });
@@ -15,8 +15,8 @@ describe("parseArgs", () => {
   });
 
   test("parses boolean flags", () => {
-    const result = parseArgs(["sync", "--force", "--remove"]);
-    expect(result.command).toBe("sync");
+    const result = parseArgs(["gen", "--force", "--remove"]);
+    expect(result.command).toBe("gen");
     expect(result.flags["--force"]).toBe(true);
     expect(result.flags["--remove"]).toBe(true);
   });
@@ -38,7 +38,7 @@ describe("parseArgs", () => {
   });
 
   test("parses mixed flags and positionals", () => {
-    const result = parseArgs(["sync", "--force", "path/to/file", "--remove"]);
+    const result = parseArgs(["gen", "--force", "path/to/file", "--remove"]);
     expect(result.flags["--force"]).toBe(true);
     expect(result.flags["--remove"]).toBe(true);
     expect(result.positionals).toEqual(["path/to/file"]);

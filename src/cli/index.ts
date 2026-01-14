@@ -4,7 +4,7 @@ import { initCommand } from "./commands/init";
 import { validateCommand } from "./commands/validate";
 import { planCommand } from "./commands/plan";
 import { diffCommand } from "./commands/diff";
-import { syncCommand } from "./commands/sync";
+import { genCommand } from "./commands/gen";
 import { doctorCommand } from "./commands/doctor";
 import { statusCommand } from "./commands/status";
 import { cleanCommand } from "./commands/clean";
@@ -14,7 +14,7 @@ import {
   renderDoctorReport,
   renderStatusReport,
   renderCleanResult,
-  renderSyncSummary
+  renderGenSummary
 } from "./render";
 import { parseArgs, buildOptions } from "./args";
 import { getHelp } from "./help";
@@ -124,11 +124,11 @@ const run = async () => {
       console.log(diff || "(no changes)");
       return;
     }
-    case "sync": {
-      const plan = await syncCommand(repoRoot, buildOptions(flags)).pipe(
+    case "gen": {
+      const plan = await genCommand(repoRoot, buildOptions(flags)).pipe(
         Effect.runPromise
       );
-      info(renderSyncSummary(plan));
+      info(renderGenSummary(plan));
       const warnings = renderWarnings(plan.warnings);
       if (warnings) info(warnings);
       return;

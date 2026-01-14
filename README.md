@@ -19,7 +19,7 @@ agentscfg init
 # edit .agentscfg/instructions/* and .agentscfg/skills/*
 agentscfg plan
 agentscfg diff
-agentscfg sync
+agentscfg gen
 ```
 
 ## Commands
@@ -29,7 +29,7 @@ init [--force]
 validate
 plan [--to claude,opencode,codex] [--json]
 diff [--to ...]
-sync [--to ...] [--remove] [--adopt] [--force] [--allow-dirty]
+gen [--to ...] [--remove] [--adopt] [--force] [--allow-dirty]
 doctor
 ```
 
@@ -66,7 +66,7 @@ Run `agentscfg <command> --help` for detailed help on each command.
 
 ### Target Mappings
 
-All files under `.agentscfg/targets/<tool>/` are synced into the tool's config
+All files under `.agentscfg/targets/<tool>/` are generated into the tool's config
 directory:
 
 - `.agentscfg/targets/claude/**` → `.claude/**`
@@ -82,13 +82,13 @@ MCP config:
 - Generated files include a `agentscfg:generated ... sha256=...` marker.
 - Guided mode (default) will not overwrite unmanaged files unless you pass
   `--adopt` or the file already contains the marker.
-- If a generated file's hash marker does not match, sync refuses to overwrite
+- If a generated file's hash marker does not match, gen refuses to overwrite
   unless `--force` is provided.
-- `sync` refuses to run on a dirty git working tree unless `--allow-dirty` is set.
+- `gen` refuses to run on a dirty git working tree unless `--allow-dirty` is set.
 
 ## Tips
 
-Add generated paths to `.gitignore` and use `agentscfg sync` to regenerate them:
+Add generated paths to `.gitignore` and use `agentscfg gen` to regenerate them:
 
 ```text
 .claude/

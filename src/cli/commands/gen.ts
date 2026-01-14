@@ -6,7 +6,7 @@ import type { PlanOptions } from "../../core/model/plan";
 import { isDirty, isGitRepo } from "../../io/git";
 import { DirtyRepoError } from "../../core/model/errors";
 
-export const syncCommand = (repoRoot: string, options: PlanOptions) =>
+export const genCommand = (repoRoot: string, options: PlanOptions) =>
   Effect.gen(function* (_) {
     const gitRepo = yield* _(isGitRepo(repoRoot));
     if (gitRepo) {
@@ -15,7 +15,7 @@ export const syncCommand = (repoRoot: string, options: PlanOptions) =>
         return yield* _(
           Effect.fail(
             new DirtyRepoError(
-              "Refusing to sync: git working tree is dirty. Commit/stash, or pass --allow-dirty."
+              "Refusing to run gen: git working tree is dirty. Commit/stash, or pass --allow-dirty."
             )
           )
         );

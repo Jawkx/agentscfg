@@ -339,7 +339,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
             `Managed tracking missing for ${normalizeRel(
               ws.repoRoot,
               destDir
-            )}. Run sync with --adopt to establish ownership.`
+            )}. Run gen with --adopt to establish ownership.`
           );
           continue;
         }
@@ -394,7 +394,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
           `Managed tracking missing for ${normalizeRel(
             ws.repoRoot,
             mapping.dest
-          )}. Run sync with --adopt to establish ownership.`
+          )}. Run gen with --adopt to establish ownership.`
         );
         continue;
       }
@@ -427,7 +427,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
               `Managed tracking missing for ${normalizeRel(
                 ws.repoRoot,
                 removePath
-              )}. Run sync with --adopt to establish ownership.`
+              )}. Run gen with --adopt to establish ownership.`
             );
           } else {
             warnings.push(
@@ -466,7 +466,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
       });
     } else if (!managedData) {
       warnings.push(
-        "managed tracking missing; run sync with --adopt to establish ownership"
+        "managed tracking missing; run gen with --adopt to establish ownership"
       );
     }
 

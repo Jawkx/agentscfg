@@ -8,5 +8,10 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "diff": "^8.0.3",
+    "effect": "^3.19.14",
+    "jsonc-parser": "^3.3.1"
   }
 }

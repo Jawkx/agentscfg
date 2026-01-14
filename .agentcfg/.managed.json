@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "managed": [
+    "CLAUDE.md",
+    "AGENTS.md",
+    ".opencode/agent/default.md",
+    ".claude/skills/**",
+    ".opencode/skill/**",
+    ".codex/skills/**"
+  ],
+  "adopted": {}
+}

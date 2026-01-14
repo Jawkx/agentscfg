@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "targets": {
+    "claude": { "enabled": true },
+    "opencode": { "enabled": true },
+    "codex": { "enabled": true }
+  },
+  "output": {
+    "newlines": "lf",
+    "charset": "utf-8"
+  },
+  "managed": {
+    "mode": "guided",
+    "allowRemove": false
+  },
+  "instructions": {
+    "includeProjectSection": true,
+    "headerStyle": "generated"
+  },
+  "skills": {
+    "emitClaudeCompatiblePathForOpenCode": true
+  }
+}

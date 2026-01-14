@@ -1,6 +1,6 @@
-# agentcfg
+# agentscfg
 
-Define AI coding agent configuration once in `.agentcfg/`, then generate equivalent
+Define AI coding agent configuration once in `.agentscfg/`, then generate equivalent
 config for Claude Code, OpenCode, and Codex CLI.
 
 ## Requirements
@@ -23,7 +23,7 @@ bun run index.ts <command> [flags]
 
 ```bash
 bun run index.ts init
-# edit .agentcfg/instructions/* and .agentcfg/skills/*
+# edit .agentscfg/instructions/* and .agentscfg/skills/*
 bun run index.ts plan
 bun run index.ts diff
 bun run index.ts sync
@@ -43,8 +43,8 @@ doctor
 ## Canonical layout
 
 ```
-.agentcfg/
-  agentcfg.jsonc
+.agentscfg/
+  agentscfg.jsonc
   instructions/
     BASE.md
     PROJECT.md
@@ -65,10 +65,10 @@ doctor
 
 ## Supported inputs (v0.2)
 
-- Instructions: `.agentcfg/instructions/BASE.md` (+ optional `PROJECT.md`)
-- Skills: `.agentcfg/skills/<skill>/SKILL.md` (+ optional resources)
-- Targets (tool settings): `.agentcfg/targets/<tool>/**`
-- MCP config: `.agentcfg/mcp/mcp.json`
+- Instructions: `.agentscfg/instructions/BASE.md` (+ optional `PROJECT.md`)
+- Skills: `.agentscfg/skills/<skill>/SKILL.md` (+ optional resources)
+- Targets (tool settings): `.agentscfg/targets/<tool>/**`
+- MCP config: `.agentscfg/mcp/mcp.json`
 
 ## Outputs (repo-only)
 
@@ -79,26 +79,26 @@ doctor
 
 ### Target mappings
 
-All files under `.agentcfg/targets/<tool>/` are synced into the tool’s config
+All files under `.agentscfg/targets/<tool>/` are synced into the tool’s config
 directory:
 
-- `.agentcfg/targets/claude/**` → `.claude/**`
-- `.agentcfg/targets/opencode/**` → `.opencode/**`
-- `.agentcfg/targets/codex/**` → `.codex/**`
+- `.agentscfg/targets/claude/**` → `.claude/**`
+- `.agentscfg/targets/opencode/**` → `.opencode/**`
+- `.agentscfg/targets/codex/**` → `.codex/**`
 
 Legacy single-file mappings are also supported:
 
-- `.agentcfg/targets/claude.settings.json` → `.claude/settings.json`
-- `.agentcfg/targets/opencode.json` → `opencode.json`
-- `.agentcfg/targets/codex.config.toml` → `.codex/config.toml`
+- `.agentscfg/targets/claude.settings.json` → `.claude/settings.json`
+- `.agentscfg/targets/opencode.json` → `opencode.json`
+- `.agentscfg/targets/codex.config.toml` → `.codex/config.toml`
 
 MCP is synced separately:
 
-- `.agentcfg/mcp/mcp.json` → `.mcp.json`
+- `.agentscfg/mcp/mcp.json` → `.mcp.json`
 
 ## Managed files + adoption
 
-- Generated files include a `agentcfg:generated ... sha256=...` marker.
+- Generated files include a `agentscfg:generated ... sha256=...` marker.
 - Guided mode (default) will not overwrite unmanaged files unless you pass
   `--adopt` or the file already contains the marker.
 - If a generated file’s hash marker does not match, sync refuses to overwrite
@@ -108,11 +108,11 @@ MCP is synced separately:
 ## Notes
 
 - v0.1 is repo-only (no global/HOME sync).
-- `agentcfg init` creates a starter `.agentcfg/` workspace.
+- `agentscfg init` creates a starter `.agentscfg/` workspace.
 
 ## Tips
 
-- The following paths are managed by agentcfg. Add them to `.gitignore` and use `agentcfg sync` to regenerate them:
+- The following paths are managed by agentscfg. Add them to `.gitignore` and use `agentscfg sync` to regenerate them:
 
 ```text
 .claude/

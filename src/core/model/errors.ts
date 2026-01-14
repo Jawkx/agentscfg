@@ -7,7 +7,7 @@ export class RepoRootNotFound extends Error {
 
 export class WorkspaceMissing extends Error {
   readonly _tag = "WorkspaceMissing";
-  constructor(message = "Canonical workspace .agentcfg not found") {
+  constructor(message = "Canonical workspace .agentscfg not found") {
     super(message);
   }
 }

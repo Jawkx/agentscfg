@@ -132,7 +132,7 @@ const run = async () => {
     default: {
       info(
         [
-          "agentcfg <command>",
+          "agentscfg <command>",
           "",
           "Commands:",
           "  init [--force]",

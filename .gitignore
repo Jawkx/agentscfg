@@ -33,7 +33,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 
-# Use agentcfg to manage these file
+# Use agentscfg to manage these file
 .claude/
 .codex/
 .opencode/

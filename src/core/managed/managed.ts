@@ -10,7 +10,7 @@ export type ManagedFile = {
 };
 
 export const managedPath = (repoRoot: string) =>
-  path.join(repoRoot, ".agentcfg", ".managed.json");
+  path.join(repoRoot, ".agentscfg", ".managed.json");
 
 export const defaultManaged = (): ManagedFile => ({
   version: 1,

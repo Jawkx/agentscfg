@@ -53,8 +53,8 @@ const parseConfig = (raw: string, pathLabel: string) =>
   });
 
 export const loadWorkspace = (repoRoot: string) => {
-  const root = path.join(repoRoot, ".agentcfg");
-  const configPath = path.join(root, "agentcfg.jsonc");
+  const root = path.join(repoRoot, ".agentscfg");
+  const configPath = path.join(root, "agentscfg.jsonc");
   const basePath = path.join(root, "instructions", "BASE.md");
   const projectPath = path.join(root, "instructions", "PROJECT.md");
   const skillsRoot = path.join(root, "skills");
@@ -73,14 +73,14 @@ export const loadWorkspace = (repoRoot: string) => {
 
     const configExists = yield* _(exists(configPath));
     if (!configExists) {
-      return yield* _(Effect.fail(new InvalidConfig("Missing agentcfg.jsonc")));
+      return yield* _(Effect.fail(new InvalidConfig("Missing agentscfg.jsonc")));
     }
 
     const rawConfig = yield* _(readFileString(configPath));
     const parsed = yield* _(parseConfig(rawConfig, configPath));
     const decoded = yield* _(
       Schema.decodeUnknown(AgentCfgSchema)(parsed).pipe(
-        Effect.mapError((err) => new InvalidConfig("Invalid agentcfg.jsonc", String(err)))
+        Effect.mapError((err) => new InvalidConfig("Invalid agentscfg.jsonc", String(err)))
       )
     );
 

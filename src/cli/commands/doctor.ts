@@ -32,8 +32,8 @@ export type DoctorReport = {
 
 export const doctorCommand = (repoRoot: string) =>
   Effect.gen(function* (_) {
-    const root = path.join(repoRoot, ".agentcfg");
-    const configPath = path.join(root, "agentcfg.jsonc");
+    const root = path.join(repoRoot, ".agentscfg");
+    const configPath = path.join(root, "agentscfg.jsonc");
     const basePath = path.join(root, "instructions", "BASE.md");
 
     const workspacePresent = yield* _(exists(root));

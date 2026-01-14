@@ -36,12 +36,12 @@ Add your canonical instructions here.
 
 export const initCommand = (repoRoot: string, force: boolean) =>
   Effect.gen(function* (_) {
-    const root = path.join(repoRoot, ".agentcfg");
+    const root = path.join(repoRoot, ".agentscfg");
     const existsRoot = yield* _(exists(root));
     if (existsRoot && !force) {
       return yield* _(
         Effect.fail(
-          new IoError("Refusing to overwrite existing .agentcfg (use --force)")
+          new IoError("Refusing to overwrite existing .agentscfg (use --force)")
         )
       );
     }
@@ -54,7 +54,7 @@ export const initCommand = (repoRoot: string, force: boolean) =>
     yield* _(mkdirp(path.join(root, "targets")));
     yield* _(mkdirp(path.join(root, "mcp")));
 
-    yield* _(writeFileAtomic(path.join(root, "agentcfg.jsonc"), defaultConfig));
+    yield* _(writeFileAtomic(path.join(root, "agentscfg.jsonc"), defaultConfig));
     yield* _(writeFileAtomic(path.join(root, "instructions", "BASE.md"), defaultBase));
     yield* _(
       writeFileAtomic(

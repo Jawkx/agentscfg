@@ -6,7 +6,16 @@ import { planCommand } from "./commands/plan";
 import { diffCommand } from "./commands/diff";
 import { syncCommand } from "./commands/sync";
 import { doctorCommand } from "./commands/doctor";
-import { renderPlanSummary, renderWarnings, renderDoctorReport } from "./render";
+import { statusCommand } from "./commands/status";
+import { cleanCommand } from "./commands/clean";
+import {
+  renderPlanSummary,
+  renderWarnings,
+  renderDoctorReport,
+  renderStatusReport,
+  renderCleanResult,
+  renderSyncSummary
+} from "./render";
 import { parseArgs, buildOptions } from "./args";
 import { getHelp } from "./help";
 import { error, info } from "../io/console";
@@ -119,10 +128,24 @@ const run = async () => {
       const plan = await syncCommand(repoRoot, buildOptions(flags)).pipe(
         Effect.runPromise
       );
-      info(renderPlanSummary(plan));
+      info(renderSyncSummary(plan));
       const warnings = renderWarnings(plan.warnings);
       if (warnings) info(warnings);
-      info("Sync complete");
+      return;
+    }
+    case "status": {
+      const report = await statusCommand(repoRoot, buildOptions(flags)).pipe(
+        Effect.runPromise
+      );
+      info(renderStatusReport(report));
+      return;
+    }
+    case "clean": {
+      const dryRun = Boolean(flags["--dry-run"]);
+      const result = await cleanCommand(repoRoot, dryRun).pipe(
+        Effect.runPromise
+      );
+      info(renderCleanResult(result));
       return;
     }
     case "doctor": {

@@ -5,9 +5,11 @@ Usage: agentscfg <command> [options]
 Commands:
   init        Initialize a new .agentscfg workspace
   validate    Validate workspace structure
+  status      Show sync status at a glance
   plan        Show what sync would do without making changes
   diff        Show file diffs for planned changes
   sync        Apply planned changes to target files
+  clean       Remove all generated files
   doctor      Diagnose workspace health
 
 Run 'agentscfg <command> --help' for command-specific help.`;
@@ -110,12 +112,49 @@ Checks for:
 Example:
   agentscfg doctor`;
 
+export const STATUS_HELP = `agentscfg status - Show sync status at a glance
+
+Usage: agentscfg status [options]
+
+Options:
+  --to <targets>   Comma-separated targets: claude,opencode,codex
+                   Default: all enabled targets
+
+Shows which targets are in sync, outdated, or missing.
+
+Legend:
+  ✓  In sync (green)
+  ○  Outdated (yellow)
+  ✗  Missing (red)
+
+Examples:
+  agentscfg status
+  agentscfg status --to claude`;
+
+export const CLEAN_HELP = `agentscfg clean - Remove all generated files
+
+Usage: agentscfg clean [options]
+
+Options:
+  --dry-run    Preview what would be removed without deleting
+
+Removes all files managed by agentscfg:
+  - CLAUDE.md, AGENTS.md
+  - .claude/, .opencode/, .codex/ directories
+  - .mcp.json
+
+Examples:
+  agentscfg clean --dry-run
+  agentscfg clean`;
+
 export const COMMAND_HELP: Record<string, string> = {
   init: INIT_HELP,
   validate: VALIDATE_HELP,
+  status: STATUS_HELP,
   plan: PLAN_HELP,
   diff: DIFF_HELP,
   sync: SYNC_HELP,
+  clean: CLEAN_HELP,
   doctor: DOCTOR_HELP
 };
 

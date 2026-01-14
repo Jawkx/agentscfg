@@ -1,10 +1,23 @@
 {
   "name": "agentscfg",
-  "module": "index.ts",
+  "version": "0.1.0-alpha.1",
   "type": "module",
-  "private": true,
+  "main": "./dist/cli.cjs",
+  "bin": {
+    "agentscfg": "./dist/cli.cjs"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "EPOCH_SEMVER.md"
+  ],
+  "scripts": {
+    "build": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --target=node18 --outfile=dist/cli.cjs --banner:js=\"#!/usr/bin/env node\" --external:jsonc-parser",
+    "prepublishOnly": "npm run build"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "esbuild": "^0.20.2"
   },
   "peerDependencies": {
     "typescript": "^5"

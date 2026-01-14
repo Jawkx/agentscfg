@@ -7,73 +7,74 @@ import { diffCommand } from "./commands/diff";
 import { syncCommand } from "./commands/sync";
 import { doctorCommand } from "./commands/doctor";
 import { renderPlanSummary, renderWarnings, renderDoctorReport } from "./render";
-import type { PlanOptions, TargetName } from "../core/model/plan";
+import { parseArgs, buildOptions } from "./args";
+import { getHelp } from "./help";
 import { error, info } from "../io/console";
+import {
+  InvalidConfig,
+  InvalidSkill,
+  WorkspaceMissing,
+  OwnershipError,
+  DirtyRepoError,
+  RepoRootNotFound
+} from "../core/model/errors";
 
-const parseArgs = (argv: string[]) => {
-  const args = [...argv];
-  const command = args.shift() ?? "help";
-  const flags: Record<string, string | boolean> = {};
-  const positionals: string[] = [];
-
-  while (args.length > 0) {
-    const current = args.shift()!;
-    if (current.startsWith("--")) {
-      const [flag, value] = current.split("=");
-      if (!flag) {
-        continue;
-      }
-      if (value !== undefined) {
-        flags[flag] = value;
-      } else if (args[0] && !args[0].startsWith("--")) {
-        if (flag === "--to") {
-          flags[flag] = args.shift()!;
-        } else {
-          flags[flag] = true;
-        }
-      } else {
-        flags[flag] = true;
-      }
-    } else {
-      positionals.push(current);
+const formatError = (err: unknown): string => {
+  if (err instanceof InvalidConfig) {
+    let msg = `Configuration error: ${err.message}`;
+    if (err.details) {
+      msg += `\n  Details: ${err.details}`;
     }
+    msg += `\n  Hint: Check your .agentscfg/agentscfg.jsonc file`;
+    return msg;
   }
 
-  return { command, flags, positionals };
-};
-
-const parseTargets = (value?: string): Set<TargetName> | undefined => {
-  if (!value) return undefined;
-  const set = new Set<TargetName>();
-  const parts = value.split(",").map((p) => p.trim());
-  for (const part of parts) {
-    if (part === "claude" || part === "opencode" || part === "codex") {
-      set.add(part);
-    }
+  if (err instanceof InvalidSkill) {
+    return `Skill error: ${err.message}\n  Hint: Each skill directory needs a SKILL.md file`;
   }
-  return set.size > 0 ? set : undefined;
-};
 
-const buildOptions = (flags: Record<string, string | boolean>): PlanOptions => ({
-  targets: parseTargets(
-    typeof flags["--to"] === "string" ? (flags["--to"] as string) : undefined
-  ),
-  remove: Boolean(flags["--remove"]),
-  adopt: Boolean(flags["--adopt"]),
-  force: Boolean(flags["--force"]),
-  allowDirty: Boolean(flags["--allow-dirty"])
-});
+  if (err instanceof WorkspaceMissing) {
+    return `Workspace not found: ${err.message}\n  Hint: Run 'agentscfg init' to create a workspace`;
+  }
+
+  if (err instanceof OwnershipError) {
+    return `Ownership conflict: ${err.message}\n  Hint: Use --adopt to take ownership or --force to overwrite`;
+  }
+
+  if (err instanceof DirtyRepoError) {
+    return `Git safety check failed: ${err.message}\n  Hint: Commit your changes first, or use --allow-dirty to override`;
+  }
+
+  if (err instanceof RepoRootNotFound) {
+    return `Not in a git repository: ${err.message}\n  Hint: Run this command from within a git repository`;
+  }
+
+  if (err instanceof Error) {
+    return err.message;
+  }
+
+  return String(err);
+};
 
 const run = async () => {
   const { command, flags } = parseArgs(process.argv.slice(2));
   const cwd = process.cwd();
   let repoRoot: string;
 
+  // Show help for --help flag on any command
+  if (flags["--help"]) {
+    info(getHelp(command));
+    return;
+  }
+
   try {
     repoRoot = await findRepoRoot(cwd).pipe(Effect.runPromise);
   } catch (err) {
     if (command === "init") {
       repoRoot = cwd;
+    } else if (command === "help" || !command) {
+      info(getHelp());
+      return;
     } else {
       throw err;
     }
@@ -129,25 +130,14 @@ const run = async () => {
       info(renderDoctorReport(report));
       return;
     }
+    case "help":
     default: {
-      info(
-        [
-          "agentscfg <command>",
-          "",
-          "Commands:",
-          "  init [--force]",
-          "  validate",
-          "  plan [--to claude,opencode,codex] [--json]",
-          "  diff [--to ...]",
-          "  sync [--to ...] [--remove] [--adopt] [--force] [--allow-dirty]",
-          "  doctor"
-        ].join("\n")
-      );
+      info(getHelp(flags["--help"] ? undefined : undefined));
     }
   }
 };
 
 run().catch((err) => {
-  error(err instanceof Error ? err.message : String(err));
+  error(formatError(err));
   process.exitCode = 1;
 });

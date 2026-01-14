@@ -5,6 +5,3 @@ export const codexInstructionPath = (repoRoot: string) =>
 
 export const codexSkillsRoot = (repoRoot: string) =>
   path.join(repoRoot, ".codex", "skills");
-
-export const codexConfigPath = (repoRoot: string) =>
-  path.join(repoRoot, ".codex", "config.toml");

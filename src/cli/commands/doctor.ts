@@ -5,18 +5,15 @@ import { loadWorkspace } from "../../core/model/workspace";
 import { readManaged } from "../../core/managed/managed";
 import {
   claudeInstructionPath,
-  claudeSkillsRoot,
-  claudeSettingsPath
+  claudeSkillsRoot
 } from "../../adapters/claude";
 import {
   opencodeInstructionPath,
-  opencodeSkillsRoot,
-  opencodeSettingsPath
+  opencodeSkillsRoot
 } from "../../adapters/opencode";
 import {
   codexInstructionPath,
-  codexSkillsRoot,
-  codexConfigPath
+  codexSkillsRoot
 } from "../../adapters/codex";
 import { mcpConfigPath } from "../../adapters/mcp";
 
@@ -68,21 +65,14 @@ export const doctorCommand = (repoRoot: string) =>
       [path.join(repoRoot, ".opencode")]: yield* _(exists(
         path.join(repoRoot, ".opencode")
       )),
-      [opencodeSettingsPath(repoRoot)]: yield* _(exists(
-        opencodeSettingsPath(repoRoot)
-      )),
       [codexInstructionPath(repoRoot)]: yield* _(exists(
         codexInstructionPath(repoRoot)
       )),
       [path.join(repoRoot, ".codex")]: yield* _(exists(
         path.join(repoRoot, ".codex")
       )),
-      [codexConfigPath(repoRoot)]: yield* _(exists(codexConfigPath(repoRoot))),
       [mcpConfigPath(repoRoot)]: yield* _(exists(mcpConfigPath(repoRoot))),
       [claudeSkillsRoot(repoRoot)]: yield* _(exists(claudeSkillsRoot(repoRoot))),
-      [claudeSettingsPath(repoRoot)]: yield* _(exists(
-        claudeSettingsPath(repoRoot)
-      )),
       [opencodeSkillsRoot(repoRoot)]: yield* _(exists(
         opencodeSkillsRoot(repoRoot)
       )),

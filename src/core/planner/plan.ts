@@ -17,19 +17,16 @@ import {
 } from "../managed/managed";
 import {
   claudeInstructionPath,
-  claudeSkillsRoot,
-  claudeSettingsPath
+  claudeSkillsRoot
 } from "../../adapters/claude";
 import {
   codexInstructionPath,
-  codexSkillsRoot,
-  codexConfigPath
+  codexSkillsRoot
 } from "../../adapters/codex";
 import {
   opencodeInstructionPath,
   opencodeSkillsRoot,
-  opencodeClaudeCompatSkillsRoot,
-  opencodeSettingsPath
+  opencodeClaudeCompatSkillsRoot
 } from "../../adapters/opencode";
 import { mcpConfigPath } from "../../adapters/mcp";
 import { shouldIncludePath } from "./skills";
@@ -39,9 +36,6 @@ const expectedOutputPaths = (repoRoot: string) =>
     claudeInstructionPath(repoRoot),
     codexInstructionPath(repoRoot),
     opencodeInstructionPath(repoRoot),
-    claudeSettingsPath(repoRoot),
-    opencodeSettingsPath(repoRoot),
-    codexConfigPath(repoRoot),
     mcpConfigPath(repoRoot)
   ]);
 
@@ -271,24 +265,6 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
       );
 
     const extraOutputs: { path: string; content: string }[] = [];
-    if (targets.has("claude") && ws.targets.claudeSettings) {
-      extraOutputs.push({
-        path: claudeSettingsPath(ws.repoRoot),
-        content: normalizeOutputContent(ws.targets.claudeSettings.content)
-      });
-    }
-    if (targets.has("opencode") && ws.targets.opencodeSettings) {
-      extraOutputs.push({
-        path: opencodeSettingsPath(ws.repoRoot),
-        content: normalizeOutputContent(ws.targets.opencodeSettings.content)
-      });
-    }
-    if (targets.has("codex") && ws.targets.codexConfig) {
-      extraOutputs.push({
-        path: codexConfigPath(ws.repoRoot),
-        content: normalizeOutputContent(ws.targets.codexConfig.content)
-      });
-    }
     if (ws.mcp && targets.size > 0) {
       extraOutputs.push({
         path: mcpConfigPath(ws.repoRoot),

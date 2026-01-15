@@ -119,8 +119,10 @@ export const renderStatusReport = (report: StatusReport) => {
     const enabledLabel = target.enabled ? "" : dim(" (disabled)");
     lines.push(bold(`${target.name}${enabledLabel}`));
 
-    const instIcon = statusIcon(target.instruction.status);
-    lines.push(`  ${instIcon} ${target.instruction.path}`);
+    if (target.instruction) {
+      const instIcon = statusIcon(target.instruction.status);
+      lines.push(`  ${instIcon} ${target.instruction.path}`);
+    }
 
     const skillsIcon = statusIcon(target.skillsRoot.status);
     lines.push(`  ${skillsIcon} ${target.skillsRoot.path}/`);

@@ -10,7 +10,6 @@ import {
   mcpConfigPath
 } from "../../adapters/claude";
 import {
-  opencodeInstructionPath,
   opencodeSkillsRoot
 } from "../../adapters/opencode";
 import {
@@ -81,7 +80,6 @@ export const doctorCommand = (repoRoot: string) =>
     const outputPaths = [
       claudeInstructionPath(repoRoot),
       path.join(repoRoot, ".claude"),
-      opencodeInstructionPath(repoRoot),
       path.join(repoRoot, ".opencode"),
       codexInstructionPath(repoRoot),
       path.join(repoRoot, ".codex"),

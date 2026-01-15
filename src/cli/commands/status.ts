@@ -9,7 +9,6 @@ import {
   claudeSkillsRoot
 } from "../../adapters/claude";
 import {
-  opencodeInstructionPath,
   opencodeSkillsRoot
 } from "../../adapters/opencode";
 import {
@@ -22,7 +21,7 @@ export type FileStatus = "synced" | "outdated" | "missing" | "unmanaged";
 export type TargetStatus = {
   name: TargetName;
   enabled: boolean;
-  instruction: { path: string; status: FileStatus };
+  instruction?: { path: string; status: FileStatus };
   skillsRoot: { path: string; status: FileStatus };
 };
 
@@ -40,10 +39,10 @@ const getInstructionPath = (target: TargetName, repoRoot: string) => {
   switch (target) {
     case "claude":
       return claudeInstructionPath(repoRoot);
-    case "opencode":
-      return opencodeInstructionPath(repoRoot);
     case "codex":
       return codexInstructionPath(repoRoot);
+    case "opencode":
+      return null;
   }
 };
 
@@ -100,12 +99,28 @@ export const statusCommand = (repoRoot: string, options: PlanOptions) =>
         .map((op) => (op as { path: string }).path)
     );
 
-    // Track which paths have pending copies
-    const pendingCopyPaths = new Set(
-      plan.ops
-        .filter((op) => op.type === "CopyDir")
-        .map((op) => (op as { to: string }).to)
-    );
+    const joinRelPath = (root: string, rel: string) =>
+      path.join(root, ...rel.split("/"));
+
+    const pendingCopyFilePaths = new Set<string>();
+    for (const op of plan.ops) {
+      if (op.type !== "CopyDir") continue;
+      for (const file of op.files) {
+        pendingCopyFilePaths.add(joinRelPath(op.to, file.rel));
+      }
+    }
+
+    const hasPendingCopyFor = (targetPath: string) =>
+      pendingCopyFilePaths.has(targetPath);
+
+    const hasPendingCopyUnder = (targetDir: string) => {
+      for (const p of pendingCopyFilePaths) {
+        if (p === targetDir || p.startsWith(targetDir + path.sep)) {
+          return true;
+        }
+      }
+      return false;
+    };
 
     for (const target of targetNames) {
       const enabled =
@@ -114,18 +129,25 @@ export const statusCommand = (repoRoot: string, options: PlanOptions) =>
       const instructionPath = getInstructionPath(target, repoRoot);
       const skillsRootPath = getSkillsRoot(target, repoRoot);
 
-      const instructionExists = yield* _(exists(instructionPath));
+      const instructionExists = instructionPath
+        ? yield* _(exists(instructionPath))
+        : false;
       const skillsRootExists = yield* _(exists(skillsRootPath));
 
-      let instructionStatus: FileStatus;
-      if (!enabled) {
-        instructionStatus = instructionExists ? "synced" : "missing";
-      } else if (!instructionExists) {
-        instructionStatus = "missing";
-      } else if (pendingWritePaths.has(instructionPath)) {
-        instructionStatus = "outdated";
-      } else {
-        instructionStatus = "synced";
+      let instructionStatus: FileStatus | undefined;
+      if (instructionPath) {
+        if (!enabled) {
+          instructionStatus = instructionExists ? "synced" : "missing";
+        } else if (!instructionExists) {
+          instructionStatus = "missing";
+        } else if (
+          pendingWritePaths.has(instructionPath) ||
+          hasPendingCopyFor(instructionPath)
+        ) {
+          instructionStatus = "outdated";
+        } else {
+          instructionStatus = "synced";
+        }
       }
 
       let skillsStatus: FileStatus;
@@ -133,9 +155,7 @@ export const statusCommand = (repoRoot: string, options: PlanOptions) =>
         skillsStatus = skillsRootExists ? "synced" : "missing";
       } else if (!skillsRootExists && ws.skills.length > 0) {
         skillsStatus = "missing";
-      } else if (
-        Array.from(pendingCopyPaths).some((p) => p.startsWith(skillsRootPath))
-      ) {
+      } else if (hasPendingCopyUnder(skillsRootPath)) {
         skillsStatus = "outdated";
       } else {
         skillsStatus = "synced";
@@ -144,10 +164,12 @@ export const statusCommand = (repoRoot: string, options: PlanOptions) =>
       targets.push({
         name: target,
         enabled,
-        instruction: {
-          path: path.relative(repoRoot, instructionPath),
-          status: instructionStatus
-        },
+        instruction: instructionPath
+          ? {
+              path: path.relative(repoRoot, instructionPath),
+              status: instructionStatus ?? "missing"
+            }
+          : undefined,
         skillsRoot: {
           path: path.relative(repoRoot, skillsRootPath),
           status: skillsStatus

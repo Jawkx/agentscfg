@@ -25,7 +25,6 @@ import {
   codexSkillsRoot
 } from "../../adapters/codex";
 import {
-  opencodeInstructionPath,
   opencodeSkillsRoot,
   opencodeClaudeCompatSkillsRoot
 } from "../../adapters/opencode";
@@ -35,7 +34,6 @@ const expectedOutputPaths = (repoRoot: string) =>
   new Set([
     claudeInstructionPath(repoRoot),
     codexInstructionPath(repoRoot),
-    opencodeInstructionPath(repoRoot),
     mcpConfigPath(repoRoot)
   ]);
 
@@ -251,9 +249,6 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
           : undefined,
         codex: targets.has("codex")
           ? codexInstructionPath(ws.repoRoot)
-          : undefined,
-        opencode: targets.has("opencode")
-          ? opencodeInstructionPath(ws.repoRoot)
           : undefined
       })
     );

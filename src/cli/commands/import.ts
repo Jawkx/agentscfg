@@ -175,8 +175,7 @@ const buildTargetExcludes = (from: ImportSource) => {
   if (from === "opencode") {
     return (rel: string) =>
       rel === "skill" ||
-      rel.startsWith("skill/") ||
-      rel === "agent/default.md";
+      rel.startsWith("skill/");
   }
   if (from === "claude" || from === "codex") {
     return (rel: string) => rel === "skills" || rel.startsWith("skills/");

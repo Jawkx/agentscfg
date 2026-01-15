@@ -63,7 +63,7 @@ Run `agentscfg <command> --help` for detailed help on each command.
 ## Outputs
 
 - Claude Code: `CLAUDE.md`, `.claude/skills/<skill>/...`
-- OpenCode: `.opencode/agent/default.md`, `.opencode/skill/<skill>/...`
+- OpenCode: `.opencode/skill/<skill>/...` (agent/config files come from `.agentscfg/targets/opencode/**`)
 - Codex CLI: `AGENTS.md`, `.codex/skills/<skill>/...`
 
 ### Target Mappings

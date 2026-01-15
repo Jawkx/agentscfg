@@ -5,3 +5,6 @@ export const claudeInstructionPath = (repoRoot: string) =>
 
 export const claudeSkillsRoot = (repoRoot: string) =>
   path.join(repoRoot, ".claude", "skills");
+
+export const mcpConfigPath = (repoRoot: string) =>
+  path.join(repoRoot, ".mcp.json");

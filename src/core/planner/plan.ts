@@ -17,7 +17,8 @@ import {
 } from "../managed/managed";
 import {
   claudeInstructionPath,
-  claudeSkillsRoot
+  claudeSkillsRoot,
+  mcpConfigPath
 } from "../../adapters/claude";
 import {
   codexInstructionPath,
@@ -28,7 +29,6 @@ import {
   opencodeSkillsRoot,
   opencodeClaudeCompatSkillsRoot
 } from "../../adapters/opencode";
-import { mcpConfigPath } from "../../adapters/mcp";
 import { shouldIncludePath } from "./skills";
 
 const expectedOutputPaths = (repoRoot: string) =>

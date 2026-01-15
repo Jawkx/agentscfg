@@ -6,7 +6,8 @@ import { planWorkspace } from "../../core/planner/plan";
 import { readManaged } from "../../core/managed/managed";
 import {
   claudeInstructionPath,
-  claudeSkillsRoot
+  claudeSkillsRoot,
+  mcpConfigPath
 } from "../../adapters/claude";
 import {
   opencodeInstructionPath,
@@ -16,7 +17,6 @@ import {
   codexInstructionPath,
   codexSkillsRoot
 } from "../../adapters/codex";
-import { mcpConfigPath } from "../../adapters/mcp";
 
 export type OutputStatus = "synced" | "outdated" | "missing";
 

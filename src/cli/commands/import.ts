@@ -3,10 +3,9 @@ import { Effect } from "effect";
 import { readFileString, writeFileAtomic, exists, readdir, stat, copyFile, rm } from "../../io/fs";
 import { shouldIncludePath } from "../../core/planner/skills";
 import { WorkspaceMissing, InvalidConfig, IoError } from "../../core/model/errors";
-import { claudeInstructionPath, claudeSkillsRoot } from "../../adapters/claude";
+import { claudeInstructionPath, claudeSkillsRoot, mcpConfigPath } from "../../adapters/claude";
 import { codexInstructionPath, codexSkillsRoot } from "../../adapters/codex";
 import { opencodeInstructionPath, opencodeSkillsRoot } from "../../adapters/opencode";
-import { mcpConfigPath } from "../../adapters/mcp";
 
 export type ImportSource = "claude" | "opencode" | "codex";
 

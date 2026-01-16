@@ -1,30 +1,54 @@
+import path from "node:path";
 import { Effect } from "effect";
-import { resolveAdapterPaths } from "./index";
+import type { AdapterSpec, AdapterPaths } from "./types";
+
+const mcpConfigRel = ".mcp.json";
+
+export const opencodeAdapterSpec = {
+  instructionRel: path.join(".opencode", "agent", "default.md"),
+  skillsRel: path.join(".opencode", "skill"),
+  extraSkillsRel: [path.join(".claude", "skills")],
+  targetsRel: ".opencode",
+  mcpConfigRel
+} satisfies AdapterSpec;
+
+export const resolveOpenCodeAdapterPaths = (repoRoot: string) =>
+  Effect.sync(() =>
+    ({
+      instructionPath: path.join(repoRoot, opencodeAdapterSpec.instructionRel),
+      skillsRoot: path.join(repoRoot, opencodeAdapterSpec.skillsRel),
+      extraSkillsRoots: (opencodeAdapterSpec.extraSkillsRel ?? []).map((rel) =>
+        path.join(repoRoot, rel)
+      ),
+      targetsRoot: path.join(repoRoot, opencodeAdapterSpec.targetsRel),
+      mcpConfigPath: path.join(repoRoot, opencodeAdapterSpec.mcpConfigRel)
+    } satisfies AdapterPaths)
+  );
 
 export const opencodeInstructionPath = (repoRoot: string) =>
   Effect.runSync(
-    resolveAdapterPaths(repoRoot, "opencode").pipe(
+    resolveOpenCodeAdapterPaths(repoRoot).pipe(
       Effect.map((paths) => paths.instructionPath)
     )
   );
 
 export const opencodeSkillsRoot = (repoRoot: string) =>
   Effect.runSync(
-    resolveAdapterPaths(repoRoot, "opencode").pipe(
+    resolveOpenCodeAdapterPaths(repoRoot).pipe(
       Effect.map((paths) => paths.skillsRoot)
     )
   );
 
 export const opencodeClaudeCompatSkillsRoot = (repoRoot: string) =>
   Effect.runSync(
-    resolveAdapterPaths(repoRoot, "opencode").pipe(
-      Effect.map((paths) => paths.extraSkillsRoots[0] ?? "")
+    resolveOpenCodeAdapterPaths(repoRoot).pipe(
+      Effect.map((paths) => paths.extraSkillsRoots[0] ?? paths.skillsRoot)
     )
   );
 
 export const mcpConfigPath = (repoRoot: string) =>
   Effect.runSync(
-    resolveAdapterPaths(repoRoot, "opencode").pipe(
+    resolveOpenCodeAdapterPaths(repoRoot).pipe(
       Effect.map((paths) => paths.mcpConfigPath)
     )
   );

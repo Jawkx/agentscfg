@@ -4,17 +4,7 @@ import { loadWorkspace, validateWorkspace } from "../../core/model/workspace";
 import { planWorkspace } from "../../core/planner/plan";
 import { exists } from "../../io/fs";
 import type { PlanOptions, TargetName } from "../../core/model/plan";
-import {
-  claudeInstructionPath,
-  claudeSkillsRoot
-} from "../../adapters/claude";
-import {
-  opencodeSkillsRoot
-} from "../../adapters/opencode";
-import {
-  codexInstructionPath,
-  codexSkillsRoot
-} from "../../adapters/codex";
+import { resolveAllAdapterPaths, type AllAdapterPaths } from "../../adapters/index";
 
 export type FileStatus = "synced" | "outdated" | "missing" | "unmanaged";
 
@@ -35,25 +25,31 @@ export type StatusReport = {
   warnings: string[];
 };
 
-const getInstructionPath = (target: TargetName, repoRoot: string) => {
+const getInstructionPath = (
+  adapters: AllAdapterPaths,
+  target: TargetName
+) => {
   switch (target) {
     case "claude":
-      return claudeInstructionPath(repoRoot);
+      return adapters.claude.instructionPath ?? null;
     case "codex":
-      return codexInstructionPath(repoRoot);
+      return adapters.codex.instructionPath ?? null;
     case "opencode":
       return null;
   }
 };
 
-const getSkillsRoot = (target: TargetName, repoRoot: string) => {
+const getSkillsRoot = (
+  adapters: AllAdapterPaths,
+  target: TargetName
+) => {
   switch (target) {
     case "claude":
-      return claudeSkillsRoot(repoRoot);
+      return adapters.claude.skillsRoot;
     case "opencode":
-      return opencodeSkillsRoot(repoRoot);
+      return adapters.opencode.skillsRoot;
     case "codex":
-      return codexSkillsRoot(repoRoot);
+      return adapters.codex.skillsRoot;
   }
 };
 
@@ -86,6 +82,8 @@ export const statusCommand = (repoRoot: string, options: PlanOptions) =>
         warnings: ["Workspace validation failed"]
       } satisfies StatusReport;
     }
+
+    const adapters = yield* _(resolveAllAdapterPaths(repoRoot));
 
     const plan = yield* _(planWorkspace(ws, options));
 
@@ -126,8 +124,8 @@ export const statusCommand = (repoRoot: string, options: PlanOptions) =>
       const enabled =
         ws.cfg.targets[target as keyof typeof ws.cfg.targets].enabled;
 
-      const instructionPath = getInstructionPath(target, repoRoot);
-      const skillsRootPath = getSkillsRoot(target, repoRoot);
+      const instructionPath = getInstructionPath(adapters, target);
+      const skillsRootPath = getSkillsRoot(adapters, target);
 
       const instructionExists = instructionPath
         ? yield* _(exists(instructionPath))

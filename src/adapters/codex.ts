@@ -1,10 +1,23 @@
-import path from "node:path";
+import { Effect } from "effect";
+import { resolveAdapterPaths } from "./index";
 
 export const codexInstructionPath = (repoRoot: string) =>
-  path.join(repoRoot, "AGENTS.md");
+  Effect.runSync(
+    resolveAdapterPaths(repoRoot, "codex").pipe(
+      Effect.map((paths) => paths.instructionPath)
+    )
+  );
 
 export const codexSkillsRoot = (repoRoot: string) =>
-  path.join(repoRoot, ".codex", "skills");
+  Effect.runSync(
+    resolveAdapterPaths(repoRoot, "codex").pipe(
+      Effect.map((paths) => paths.skillsRoot)
+    )
+  );
 
 export const mcpConfigPath = (repoRoot: string) =>
-  path.join(repoRoot, ".mcp.json");
+  Effect.runSync(
+    resolveAdapterPaths(repoRoot, "codex").pipe(
+      Effect.map((paths) => paths.mcpConfigPath)
+    )
+  );

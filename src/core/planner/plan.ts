@@ -15,30 +15,10 @@ import {
   managedPath,
   readManaged
 } from "../managed/managed";
-import {
-  claudeInstructionPath,
-  claudeSkillsRoot,
-  mcpConfigPath
-} from "../../adapters/claude";
-import {
-  codexInstructionPath,
-  codexSkillsRoot
-} from "../../adapters/codex";
-import {
-  opencodeSkillsRoot,
-  opencodeClaudeCompatSkillsRoot
-} from "../../adapters/opencode";
+import { resolveAllAdapterPaths, type AllAdapterPaths } from "../../adapters/index";
 import { shouldIncludePath } from "./skills";
 
-const expectedOutputPaths = (repoRoot: string) =>
-  new Set([
-    claudeInstructionPath(repoRoot),
-    codexInstructionPath(repoRoot),
-    mcpConfigPath(repoRoot)
-  ]);
-
-const isExpectedOutput = (repoRoot: string, targetPath: string) =>
-  expectedOutputPaths(repoRoot).has(targetPath);
+// Output paths are derived via adapters registry.
 
 const normalizeRel = (repoRoot: string, targetPath: string) =>
   path.relative(repoRoot, targetPath).replace(/\\/g, "/");
@@ -83,6 +63,7 @@ const walkFiles = (
 const planWriteFile = (
   repoRoot: string,
   managedData: ReturnType<typeof defaultManaged> | null,
+  expectedOutputs: ReadonlySet<string>,
   targetPath: string,
   content: string,
   sha: string | undefined,
@@ -108,7 +89,7 @@ const planWriteFile = (
       ? isManagedPath(repoRoot, targetPath, managedData)
       : false;
 
-    const expected = isExpectedOutput(repoRoot, targetPath);
+    const expected = expectedOutputs.has(targetPath);
     const canAdopt = expected && (options.adopt || markerSha !== null);
 
     if (existsNow && current === content) {
@@ -135,25 +116,25 @@ const planWriteFile = (
   });
 
 const buildSkillTargets = (
-  repoRoot: string,
+  adapterPaths: AllAdapterPaths,
   cfg: ResolvedAgentCfg,
   targets: Set<TargetName>
 ) => {
   const result: { name: TargetName | "opencode-compat"; root: string }[] = [];
   if (targets.has("claude")) {
-    result.push({ name: "claude", root: claudeSkillsRoot(repoRoot) });
+    result.push({ name: "claude", root: adapterPaths.claude.skillsRoot });
   }
   if (targets.has("opencode")) {
-    result.push({ name: "opencode", root: opencodeSkillsRoot(repoRoot) });
+    result.push({ name: "opencode", root: adapterPaths.opencode.skillsRoot });
     if (cfg.skills.emitClaudeCompatiblePathForOpenCode) {
       result.push({
         name: "opencode-compat",
-        root: opencodeClaudeCompatSkillsRoot(repoRoot)
+        root: adapterPaths.opencode.extraSkillsRoots[0] ?? adapterPaths.opencode.skillsRoot
       });
     }
   }
   if (targets.has("codex")) {
-    result.push({ name: "codex", root: codexSkillsRoot(repoRoot) });
+    result.push({ name: "codex", root: adapterPaths.codex.skillsRoot });
   }
   const dedup = new Map<string, { name: string; root: string }>();
   for (const entry of result) {
@@ -241,14 +222,22 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
   Effect.gen(function* (_) {
     const targets = resolveTargets(ws.cfg, options);
     const managedData = yield* _(readManaged(ws.repoRoot));
+    const adapterPaths = yield* _(resolveAllAdapterPaths(ws.repoRoot));
+    const expectedOutputs = new Set(
+      [
+        adapterPaths.claude.instructionPath,
+        adapterPaths.codex.instructionPath,
+        adapterPaths.claude.mcpConfigPath
+      ]
+    );
 
     const instructionOutputs = yield* _(
       compileInstructions(ws.cfg, ws.instructions, {
         claude: targets.has("claude")
-          ? claudeInstructionPath(ws.repoRoot)
+          ? adapterPaths.claude.instructionPath
           : undefined,
         codex: targets.has("codex")
-          ? codexInstructionPath(ws.repoRoot)
+          ? adapterPaths.codex.instructionPath
           : undefined
       })
     );
@@ -262,7 +251,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
     const extraOutputs: { path: string; content: string }[] = [];
     if (ws.mcp && targets.size > 0) {
       extraOutputs.push({
-        path: mcpConfigPath(ws.repoRoot),
+        path: adapterPaths.claude.mcpConfigPath,
         content: normalizeOutputContent(ws.mcp.content)
       });
     }
@@ -277,6 +266,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
         planWriteFile(
           ws.repoRoot,
           managedData ?? null,
+          expectedOutputs,
           output.path,
           output.content,
           output.sha,
@@ -298,6 +288,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
         planWriteFile(
           ws.repoRoot,
           managedData ?? null,
+          expectedOutputs,
           output.path,
           output.content,
           undefined,
@@ -314,7 +305,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
       }
     }
 
-    const skillTargets = buildSkillTargets(ws.repoRoot, ws.cfg, targets);
+    const skillTargets = buildSkillTargets(adapterPaths, ws.cfg, targets);
     for (const skill of ws.skills) {
       for (const target of skillTargets) {
         const destDir = path.join(target.root, skill.name);

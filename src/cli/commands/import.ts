@@ -3,9 +3,7 @@ import { Effect } from "effect";
 import { readFileString, writeFileAtomic, exists, readdir, stat, copyFile, rm } from "../../io/fs";
 import { shouldIncludePath } from "../../core/planner/skills";
 import { WorkspaceMissing, InvalidConfig, IoError } from "../../core/model/errors";
-import { claudeInstructionPath, claudeSkillsRoot, mcpConfigPath } from "../../adapters/claude";
-import { codexInstructionPath, codexSkillsRoot } from "../../adapters/codex";
-import { opencodeInstructionPath, opencodeSkillsRoot } from "../../adapters/opencode";
+import { resolveAllAdapterPaths, type AllAdapterPaths } from "../../adapters/index";
 
 export type ImportSource = "claude" | "opencode" | "codex";
 
@@ -148,27 +146,17 @@ const ensureWorkspace = (repoRoot: string) =>
     };
   });
 
-const resolveSource = (repoRoot: string, from: ImportSource) => {
-  switch (from) {
-    case "claude":
-      return {
-        instructionPath: claudeInstructionPath(repoRoot),
-        skillsRoot: claudeSkillsRoot(repoRoot),
-        targetsRoot: path.join(repoRoot, ".claude")
-      };
-    case "opencode":
-      return {
-        instructionPath: opencodeInstructionPath(repoRoot),
-        skillsRoot: opencodeSkillsRoot(repoRoot),
-        targetsRoot: path.join(repoRoot, ".opencode")
-      };
-    case "codex":
-      return {
-        instructionPath: codexInstructionPath(repoRoot),
-        skillsRoot: codexSkillsRoot(repoRoot),
-        targetsRoot: path.join(repoRoot, ".codex")
-      };
-  }
+const resolveSource = (
+  adapters: AllAdapterPaths,
+  from: ImportSource
+) => {
+  const mapping = adapters[from];
+
+  return {
+    instructionPath: mapping.instructionPath,
+    skillsRoot: mapping.skillsRoot,
+    targetsRoot: mapping.targetsRoot
+  };
 };
 
 const buildTargetExcludes = (from: ImportSource) => {
@@ -199,8 +187,9 @@ export const importCommand = (repoRoot: string, from: string | boolean) =>
     }
 
     const ws = yield* _(ensureWorkspace(repoRoot));
+    const adapters = yield* _(resolveAllAdapterPaths(repoRoot));
     const tool = source as ImportSource;
-    const mapping = resolveSource(repoRoot, tool);
+    const mapping = resolveSource(adapters, tool);
     const warnings: string[] = [];
 
     if (!(yield* _(exists(mapping.instructionPath)))) {
@@ -241,7 +230,7 @@ export const importCommand = (repoRoot: string, from: string | boolean) =>
     }
 
     let mcpCopied = false;
-    const mcpSource = mcpConfigPath(repoRoot);
+    const mcpSource = adapters.claude.mcpConfigPath;
     if (yield* _(exists(mcpSource))) {
       yield* _(copyFile(mcpSource, ws.mcpPath));
       mcpCopied = true;

@@ -1,13 +1,30 @@
-import path from "node:path";
+import { Effect } from "effect";
+import { resolveAdapterPaths } from "./index";
 
 export const opencodeInstructionPath = (repoRoot: string) =>
-  path.join(repoRoot, ".opencode", "agent", "default.md");
+  Effect.runSync(
+    resolveAdapterPaths(repoRoot, "opencode").pipe(
+      Effect.map((paths) => paths.instructionPath)
+    )
+  );
 
 export const opencodeSkillsRoot = (repoRoot: string) =>
-  path.join(repoRoot, ".opencode", "skill");
+  Effect.runSync(
+    resolveAdapterPaths(repoRoot, "opencode").pipe(
+      Effect.map((paths) => paths.skillsRoot)
+    )
+  );
 
 export const opencodeClaudeCompatSkillsRoot = (repoRoot: string) =>
-  path.join(repoRoot, ".claude", "skills");
+  Effect.runSync(
+    resolveAdapterPaths(repoRoot, "opencode").pipe(
+      Effect.map((paths) => paths.extraSkillsRoots[0] ?? "")
+    )
+  );
 
 export const mcpConfigPath = (repoRoot: string) =>
-  path.join(repoRoot, ".mcp.json");
+  Effect.runSync(
+    resolveAdapterPaths(repoRoot, "opencode").pipe(
+      Effect.map((paths) => paths.mcpConfigPath)
+    )
+  );

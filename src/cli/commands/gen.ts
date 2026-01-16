@@ -25,6 +25,6 @@ export const genCommand = (repoRoot: string, options: PlanOptions) =>
     const ws = yield* _(loadWorkspace(repoRoot));
     yield* _(validateWorkspace(ws));
     const plan = yield* _(planWorkspace(ws, options));
-    yield* _(applyPlan(plan, options));
+    yield* _(applyPlan(repoRoot, plan, options));
     return plan;
   });

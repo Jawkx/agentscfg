@@ -5,7 +5,6 @@ import type { AdapterSpec, AdapterPaths } from "./types";
 export const opencodeAdapterSpec = {
   instructionRel: path.join(".opencode", "agent", "default.md"),
   skillsRel: path.join(".opencode", "skill"),
-  extraSkillsRel: [path.join(".claude", "skills")],
   targetsRel: ".opencode",
   mcpConfigRel: ".mcp.json"
 } satisfies AdapterSpec;
@@ -16,9 +15,6 @@ export const resolveOpenCodeAdapterPaths = (
   Effect.sync(() => ({
     instructionPath: path.join(repoRoot, opencodeAdapterSpec.instructionRel),
     skillsRoot: path.join(repoRoot, opencodeAdapterSpec.skillsRel),
-    extraSkillsRoots: (opencodeAdapterSpec.extraSkillsRel ?? []).map((rel) =>
-      path.join(repoRoot, rel)
-    ),
     targetsRoot: path.join(repoRoot, opencodeAdapterSpec.targetsRel),
     mcpConfigPath: path.join(repoRoot, opencodeAdapterSpec.mcpConfigRel)
   }));
@@ -34,13 +30,6 @@ export const opencodeSkillsRoot = (repoRoot: string) =>
   Effect.runSync(
     resolveOpenCodeAdapterPaths(repoRoot).pipe(
       Effect.map((paths) => paths.skillsRoot)
-    )
-  );
-
-export const opencodeClaudeCompatSkillsRoot = (repoRoot: string) =>
-  Effect.runSync(
-    resolveOpenCodeAdapterPaths(repoRoot).pipe(
-      Effect.map((paths) => paths.extraSkillsRoots[0] ?? paths.skillsRoot)
     )
   );
 

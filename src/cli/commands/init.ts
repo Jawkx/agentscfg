@@ -22,9 +22,6 @@ const defaultConfig = `{
   "instructions": {
     "includeProjectSection": true,
     "headerStyle": "generated"
-  },
-  "skills": {
-    "emitClaudeCompatiblePathForOpenCode": true
   }
 }
 `;

@@ -15,7 +15,6 @@ export const resolveCodexAdapterPaths = (
   Effect.sync(() => ({
     instructionPath: path.join(repoRoot, codexAdapterSpec.instructionRel),
     skillsRoot: path.join(repoRoot, codexAdapterSpec.skillsRel),
-    extraSkillsRoots: [],
     targetsRoot: path.join(repoRoot, codexAdapterSpec.targetsRel),
     mcpConfigPath: path.join(repoRoot, codexAdapterSpec.mcpConfigRel)
   }));

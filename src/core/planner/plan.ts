@@ -117,21 +117,14 @@ const planWriteFile = (
 
 const buildSkillTargets = (
   adapterPaths: AllAdapterPaths,
-  cfg: ResolvedAgentCfg,
   targets: Set<TargetName>
 ) => {
-  const result: { name: TargetName | "opencode-compat"; root: string }[] = [];
+  const result: { name: TargetName; root: string }[] = [];
   if (targets.has("claude")) {
     result.push({ name: "claude", root: adapterPaths.claude.skillsRoot });
   }
   if (targets.has("opencode")) {
     result.push({ name: "opencode", root: adapterPaths.opencode.skillsRoot });
-    if (cfg.skills.emitClaudeCompatiblePathForOpenCode) {
-      result.push({
-        name: "opencode-compat",
-        root: adapterPaths.opencode.extraSkillsRoots[0] ?? adapterPaths.opencode.skillsRoot
-      });
-    }
   }
   if (targets.has("codex")) {
     result.push({ name: "codex", root: adapterPaths.codex.skillsRoot });
@@ -305,7 +298,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
       }
     }
 
-    const skillTargets = buildSkillTargets(adapterPaths, ws.cfg, targets);
+    const skillTargets = buildSkillTargets(adapterPaths, targets);
     for (const skill of ws.skills) {
       for (const target of skillTargets) {
         const destDir = path.join(target.root, skill.name);

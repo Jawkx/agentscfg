@@ -15,7 +15,6 @@ export const resolveClaudeAdapterPaths = (
   Effect.sync(() => ({
     instructionPath: path.join(repoRoot, claudeAdapterSpec.instructionRel),
     skillsRoot: path.join(repoRoot, claudeAdapterSpec.skillsRel),
-    extraSkillsRoots: [],
     targetsRoot: path.join(repoRoot, claudeAdapterSpec.targetsRel),
     mcpConfigPath: path.join(repoRoot, claudeAdapterSpec.mcpConfigRel)
   }));

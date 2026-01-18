@@ -4,18 +4,7 @@ import { exists } from "../../io/fs";
 import { loadWorkspace, validateWorkspace } from "../../core/model/workspace";
 import { planWorkspace } from "../../core/planner/plan";
 import { readManaged } from "../../core/managed/managed";
-import {
-  claudeInstructionPath,
-  claudeSkillsRoot,
-  mcpConfigPath
-} from "../../adapters/claude";
-import {
-  opencodeSkillsRoot
-} from "../../adapters/opencode";
-import {
-  codexInstructionPath,
-  codexSkillsRoot
-} from "../../adapters/codex";
+import { resolveAllAdapterPaths } from "../../adapters/index";
 
 export type OutputStatus = "synced" | "outdated" | "missing";
 
@@ -77,17 +66,19 @@ export const doctorCommand = (repoRoot: string) =>
       }
     }
 
+    const adapters = yield* _(resolveAllAdapterPaths(repoRoot));
+
     const outputPaths = [
-      claudeInstructionPath(repoRoot),
-      path.join(repoRoot, ".claude"),
-      path.join(repoRoot, ".opencode"),
-      codexInstructionPath(repoRoot),
-      path.join(repoRoot, ".codex"),
-      mcpConfigPath(repoRoot),
-      claudeSkillsRoot(repoRoot),
-      opencodeSkillsRoot(repoRoot),
-      codexSkillsRoot(repoRoot)
-    ];
+      adapters.claude.instructionPath,
+      adapters.claude.targetsRoot,
+      adapters.opencode.targetsRoot,
+      adapters.codex.instructionPath,
+      adapters.codex.targetsRoot,
+      adapters.claude.mcpConfigPath,
+      adapters.claude.skillsRoot,
+      adapters.opencode.skillsRoot,
+      adapters.codex.skillsRoot
+    ].filter((p): p is string => Boolean(p));
 
     const outputs: Record<string, { exists: boolean; status: OutputStatus }> = {};
 

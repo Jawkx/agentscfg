@@ -163,9 +163,10 @@ const run = async () => {
       return;
     }
     case "import": {
-      const result = await importCommand(repoRoot, flags["--from"]).pipe(
-        Effect.runPromise
-      );
+      const result = await importCommand(
+        repoRoot,
+        flags["--from"] ?? false
+      ).pipe(Effect.runPromise);
       info(renderImportSummary(result));
       const warnings = renderWarnings(result.warnings);
       if (warnings) info(warnings);

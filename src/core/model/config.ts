@@ -25,17 +25,12 @@ export const InstructionsSchema = Schema.Struct({
   headerStyle: Schema.optional(Schema.Literal("generated"))
 });
 
-export const SkillsSchema = Schema.Struct({
-  emitClaudeCompatiblePathForOpenCode: Schema.optional(Schema.Boolean)
-});
-
 export const AgentCfgSchema = Schema.Struct({
   version: Schema.Literal(1),
   targets: Schema.optional(TargetsSchema),
   output: Schema.optional(OutputSchema),
   managed: Schema.optional(ManagedSchema),
-  instructions: Schema.optional(InstructionsSchema),
-  skills: Schema.optional(SkillsSchema)
+  instructions: Schema.optional(InstructionsSchema)
 });
 
 export type AgentCfg = Schema.Schema.Type<typeof AgentCfgSchema>;
@@ -59,9 +54,6 @@ export type ResolvedAgentCfg = {
     includeProjectSection: boolean;
     headerStyle: "generated";
   };
-  skills: {
-    emitClaudeCompatiblePathForOpenCode: boolean;
-  };
 };
 
 export const withDefaults = (cfg: AgentCfg): ResolvedAgentCfg => {
@@ -83,10 +75,6 @@ export const withDefaults = (cfg: AgentCfg): ResolvedAgentCfg => {
     instructions: {
       includeProjectSection: cfg.instructions?.includeProjectSection ?? true,
       headerStyle: "generated"
-    },
-    skills: {
-      emitClaudeCompatiblePathForOpenCode:
-        cfg.skills?.emitClaudeCompatiblePathForOpenCode ?? true
     }
   };
 };

@@ -24,9 +24,6 @@ describe("withDefaults", () => {
       instructions: {
         includeProjectSection: true,
         headerStyle: "generated"
-      },
-      skills: {
-        emitClaudeCompatiblePathForOpenCode: true
       }
     });
   });

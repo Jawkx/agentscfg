@@ -2,25 +2,23 @@ import path from "node:path";
 import { Effect } from "effect";
 import type { AdapterSpec, AdapterPaths } from "./types";
 
-const mcpConfigRel = ".mcp.json";
-
 export const claudeAdapterSpec = {
   instructionRel: "CLAUDE.md",
   skillsRel: path.join(".claude", "skills"),
   targetsRel: ".claude",
-  mcpConfigRel
+  mcpConfigRel: ".mcp.json"
 } satisfies AdapterSpec;
 
-export const resolveClaudeAdapterPaths = (repoRoot: string) =>
-  Effect.sync(() =>
-    ({
-      instructionPath: path.join(repoRoot, claudeAdapterSpec.instructionRel),
-      skillsRoot: path.join(repoRoot, claudeAdapterSpec.skillsRel),
-      extraSkillsRoots: [],
-      targetsRoot: path.join(repoRoot, claudeAdapterSpec.targetsRel),
-      mcpConfigPath: path.join(repoRoot, claudeAdapterSpec.mcpConfigRel)
-    } satisfies AdapterPaths)
-  );
+export const resolveClaudeAdapterPaths = (
+  repoRoot: string
+): Effect.Effect<AdapterPaths, never, never> =>
+  Effect.sync(() => ({
+    instructionPath: path.join(repoRoot, claudeAdapterSpec.instructionRel),
+    skillsRoot: path.join(repoRoot, claudeAdapterSpec.skillsRel),
+    extraSkillsRoots: [],
+    targetsRoot: path.join(repoRoot, claudeAdapterSpec.targetsRel),
+    mcpConfigPath: path.join(repoRoot, claudeAdapterSpec.mcpConfigRel)
+  }));
 
 export const claudeInstructionPath = (repoRoot: string) =>
   Effect.runSync(

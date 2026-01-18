@@ -2,25 +2,23 @@ import path from "node:path";
 import { Effect } from "effect";
 import type { AdapterSpec, AdapterPaths } from "./types";
 
-const mcpConfigRel = ".mcp.json";
-
 export const codexAdapterSpec = {
   instructionRel: "AGENTS.md",
   skillsRel: path.join(".codex", "skills"),
   targetsRel: ".codex",
-  mcpConfigRel
+  mcpConfigRel: ".mcp.json"
 } satisfies AdapterSpec;
 
-export const resolveCodexAdapterPaths = (repoRoot: string) =>
-  Effect.sync(() =>
-    ({
-      instructionPath: path.join(repoRoot, codexAdapterSpec.instructionRel),
-      skillsRoot: path.join(repoRoot, codexAdapterSpec.skillsRel),
-      extraSkillsRoots: [],
-      targetsRoot: path.join(repoRoot, codexAdapterSpec.targetsRel),
-      mcpConfigPath: path.join(repoRoot, codexAdapterSpec.mcpConfigRel)
-    } satisfies AdapterPaths)
-  );
+export const resolveCodexAdapterPaths = (
+  repoRoot: string
+): Effect.Effect<AdapterPaths, never, never> =>
+  Effect.sync(() => ({
+    instructionPath: path.join(repoRoot, codexAdapterSpec.instructionRel),
+    skillsRoot: path.join(repoRoot, codexAdapterSpec.skillsRel),
+    extraSkillsRoots: [],
+    targetsRoot: path.join(repoRoot, codexAdapterSpec.targetsRel),
+    mcpConfigPath: path.join(repoRoot, codexAdapterSpec.mcpConfigRel)
+  }));
 
 export const codexInstructionPath = (repoRoot: string) =>
   Effect.runSync(

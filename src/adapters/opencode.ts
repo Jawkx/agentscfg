@@ -2,28 +2,26 @@ import path from "node:path";
 import { Effect } from "effect";
 import type { AdapterSpec, AdapterPaths } from "./types";
 
-const mcpConfigRel = ".mcp.json";
-
 export const opencodeAdapterSpec = {
   instructionRel: path.join(".opencode", "agent", "default.md"),
   skillsRel: path.join(".opencode", "skill"),
   extraSkillsRel: [path.join(".claude", "skills")],
   targetsRel: ".opencode",
-  mcpConfigRel
+  mcpConfigRel: ".mcp.json"
 } satisfies AdapterSpec;
 
-export const resolveOpenCodeAdapterPaths = (repoRoot: string) =>
-  Effect.sync(() =>
-    ({
-      instructionPath: path.join(repoRoot, opencodeAdapterSpec.instructionRel),
-      skillsRoot: path.join(repoRoot, opencodeAdapterSpec.skillsRel),
-      extraSkillsRoots: (opencodeAdapterSpec.extraSkillsRel ?? []).map((rel) =>
-        path.join(repoRoot, rel)
-      ),
-      targetsRoot: path.join(repoRoot, opencodeAdapterSpec.targetsRel),
-      mcpConfigPath: path.join(repoRoot, opencodeAdapterSpec.mcpConfigRel)
-    } satisfies AdapterPaths)
-  );
+export const resolveOpenCodeAdapterPaths = (
+  repoRoot: string
+): Effect.Effect<AdapterPaths, never, never> =>
+  Effect.sync(() => ({
+    instructionPath: path.join(repoRoot, opencodeAdapterSpec.instructionRel),
+    skillsRoot: path.join(repoRoot, opencodeAdapterSpec.skillsRel),
+    extraSkillsRoots: (opencodeAdapterSpec.extraSkillsRel ?? []).map((rel) =>
+      path.join(repoRoot, rel)
+    ),
+    targetsRoot: path.join(repoRoot, opencodeAdapterSpec.targetsRel),
+    mcpConfigPath: path.join(repoRoot, opencodeAdapterSpec.mcpConfigRel)
+  }));
 
 export const opencodeInstructionPath = (repoRoot: string) =>
   Effect.runSync(

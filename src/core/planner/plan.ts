@@ -16,7 +16,7 @@ import {
   readManaged
 } from "../managed/managed";
 import { resolveAllAdapterPaths, type AllAdapterPaths } from "../../adapters/index";
-import { shouldIncludePath } from "./skills";
+import { shouldIncludePath } from "../fs/filters";
 
 // Output paths are derived via adapters registry.
 

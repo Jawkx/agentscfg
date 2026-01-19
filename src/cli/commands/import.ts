@@ -1,7 +1,7 @@
 import path from "node:path";
 import { Effect } from "effect";
 import { readFileString, writeFileAtomic, exists, readdir, stat, copyFile, rm } from "../../io/fs";
-import { shouldIncludePath } from "../../core/planner/skills";
+import { shouldIncludePath } from "../../core/fs/filters";
 import { WorkspaceMissing, InvalidConfig, IoError } from "../../core/model/errors";
 import { resolveAllAdapterPaths } from "../../adapters/index";
 

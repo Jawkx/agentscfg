@@ -4,7 +4,7 @@ import path from "node:path";
 import { readFileString, exists, readdir } from "../../io/fs";
 import { InvalidConfig, InvalidSkill, WorkspaceMissing } from "./errors";
 import { AgentCfgSchema, withDefaults, type ResolvedAgentCfg } from "./config";
-import { isExcludedPath } from "../planner/skills";
+import { isExcludedPath } from "../fs/filters";
 
 export type InstructionSources = {
   basePath: string;

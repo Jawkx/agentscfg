@@ -3,7 +3,7 @@ import { Effect } from "effect";
 import { readFileString, writeFileAtomic, exists, readdir, stat, copyFile, rm } from "../../io/fs";
 import { shouldIncludePath } from "../../core/planner/skills";
 import { WorkspaceMissing, InvalidConfig, IoError } from "../../core/model/errors";
-import { resolveAllAdapterPaths, type AllAdapterPaths } from "../../adapters/index";
+import { resolveAllAdapterPaths } from "../../adapters/index";
 
 export type ImportSource = "claude" | "opencode" | "codex";
 
@@ -146,29 +146,12 @@ const ensureWorkspace = (repoRoot: string) =>
     };
   });
 
-const resolveSource = (
-  adapters: AllAdapterPaths,
-  from: ImportSource
-) => {
-  const mapping = adapters[from];
-
-  return {
-    instructionPath: mapping.instructionPath,
-    skillsRoot: mapping.skillsRoot,
-    targetsRoot: mapping.targetsRoot
-  };
-};
-
-const buildTargetExcludes = (from: ImportSource) => {
-  if (from === "opencode") {
-    return (rel: string) =>
-      rel === "skill" ||
-      rel.startsWith("skill/");
+const buildTargetExcludes = (excludeDirs: string[]) => {
+  if (excludeDirs.length === 0) {
+    return undefined;
   }
-  if (from === "claude" || from === "codex") {
-    return (rel: string) => rel === "skills" || rel.startsWith("skills/");
-  }
-  return undefined;
+  return (rel: string) =>
+    excludeDirs.some((dir) => rel === dir || rel.startsWith(`${dir}/`));
 };
 
 export const importCommand = (repoRoot: string, from: string | boolean) =>
@@ -189,12 +172,14 @@ export const importCommand = (repoRoot: string, from: string | boolean) =>
     const ws = yield* _(ensureWorkspace(repoRoot));
     const adapters = yield* _(resolveAllAdapterPaths(repoRoot));
     const tool = source as ImportSource;
-    const mapping = resolveSource(adapters, tool);
+    const mapping = adapters[tool];
     const warnings: string[] = [];
 
-    if (!(yield* _(exists(mapping.instructionPath)))) {
+    if (!mapping.instructionPath || !(yield* _(exists(mapping.instructionPath)))) {
       return yield* _(
-        Effect.fail(new IoError(`Missing source instructions at ${mapping.instructionPath}`))
+        Effect.fail(
+          new IoError(`Missing source instructions at ${mapping.instructionPath ?? ""}`)
+        )
       );
     }
 
@@ -223,15 +208,15 @@ export const importCommand = (repoRoot: string, from: string | boolean) =>
     if (yield* _(exists(mapping.targetsRoot))) {
       const destRoot = path.join(ws.targetsRoot, tool);
       targetsCount = yield* _(
-        copyDir(mapping.targetsRoot, destRoot, buildTargetExcludes(tool))
+        copyDir(mapping.targetsRoot, destRoot, buildTargetExcludes(mapping.targetExcludeDirs))
       );
     } else {
       warnings.push(`No target config found at ${mapping.targetsRoot}`);
     }
 
     let mcpCopied = false;
-    const mcpSource = adapters.claude.mcpConfigPath;
-    if (yield* _(exists(mcpSource))) {
+    const mcpSource = mapping.mcpConfigPath;
+    if (mcpSource && (yield* _(exists(mcpSource)))) {
       yield* _(copyFile(mcpSource, ws.mcpPath));
       mcpCopied = true;
     }

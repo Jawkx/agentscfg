@@ -68,17 +68,20 @@ export const doctorCommand = (repoRoot: string) =>
 
     const adapters = yield* _(resolveAllAdapterPaths(repoRoot));
 
-    const outputPaths = [
-      adapters.claude.instructionPath,
-      adapters.claude.targetsRoot,
-      adapters.opencode.targetsRoot,
-      adapters.codex.instructionPath,
-      adapters.codex.targetsRoot,
-      adapters.claude.mcpConfigPath,
-      adapters.claude.skillsRoot,
-      adapters.opencode.skillsRoot,
-      adapters.codex.skillsRoot
-    ].filter((p): p is string => Boolean(p));
+    const outputPathSet = new Set<string>();
+    const targetNames = ["claude", "opencode", "codex"] as const;
+    for (const name of targetNames) {
+      const adapter = adapters[name];
+      outputPathSet.add(adapter.targetsRoot);
+      outputPathSet.add(adapter.skillsRoot);
+      if (adapter.instructionMode === "generated" && adapter.instructionPath) {
+        outputPathSet.add(adapter.instructionPath);
+      }
+      if (adapter.mcpConfigPath) {
+        outputPathSet.add(adapter.mcpConfigPath);
+      }
+    }
+    const outputPaths = Array.from(outputPathSet);
 
     const outputs: Record<string, { exists: boolean; status: OutputStatus }> = {};
 

@@ -1,28 +1,16 @@
-import path from "node:path";
 import { Effect } from "effect";
-import type { AdapterSpec, AdapterPaths } from "./types";
+import { adapterSpecs } from "./specs";
+import { resolveAdapterPathsFromSpec } from "./paths";
 
-export const claudeAdapterSpec = {
-  instructionRel: "CLAUDE.md",
-  skillsRel: path.join(".claude", "skills"),
-  targetsRel: ".claude",
-  mcpConfigRel: ".mcp.json"
-} satisfies AdapterSpec;
+export const claudeAdapterSpec = adapterSpecs.claude;
 
-export const resolveClaudeAdapterPaths = (
-  repoRoot: string
-): Effect.Effect<AdapterPaths, never, never> =>
-  Effect.sync(() => ({
-    instructionPath: path.join(repoRoot, claudeAdapterSpec.instructionRel),
-    skillsRoot: path.join(repoRoot, claudeAdapterSpec.skillsRel),
-    targetsRoot: path.join(repoRoot, claudeAdapterSpec.targetsRel),
-    mcpConfigPath: path.join(repoRoot, claudeAdapterSpec.mcpConfigRel)
-  }));
+export const resolveClaudeAdapterPaths = (repoRoot: string) =>
+  resolveAdapterPathsFromSpec(repoRoot, claudeAdapterSpec);
 
 export const claudeInstructionPath = (repoRoot: string) =>
   Effect.runSync(
     resolveClaudeAdapterPaths(repoRoot).pipe(
-      Effect.map((paths) => paths.instructionPath)
+      Effect.map((paths) => paths.instructionPath ?? "")
     )
   );
 
@@ -36,6 +24,6 @@ export const claudeSkillsRoot = (repoRoot: string) =>
 export const mcpConfigPath = (repoRoot: string) =>
   Effect.runSync(
     resolveClaudeAdapterPaths(repoRoot).pipe(
-      Effect.map((paths) => paths.mcpConfigPath)
+      Effect.map((paths) => paths.mcpConfigPath ?? "")
     )
   );

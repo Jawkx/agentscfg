@@ -2,6 +2,7 @@ import path from "node:path";
 import { Effect } from "effect";
 import { exists, readFileString, writeFileAtomic } from "../../io/fs";
 import { IoError } from "../model/errors";
+import { adapterSpecs } from "../../adapters/specs";
 
 export type ManagedFile = {
   version: 1;
@@ -12,19 +13,31 @@ export type ManagedFile = {
 export const managedPath = (repoRoot: string) =>
   path.join(repoRoot, ".agentscfg", ".managed.json");
 
+const legacyManaged = [
+  "CLAUDE.md",
+  "AGENTS.md",
+  ".claude/settings.json",
+  ".codex/config.toml",
+  "opencode.json"
+];
+
+const managedFromSpecs = () => {
+  const managed = new Set<string>();
+  for (const spec of Object.values(adapterSpecs)) {
+    managed.add(`${spec.targets.rel}/**`);
+    if (spec.instruction?.mode === "generated") {
+      managed.add(spec.instruction.rel);
+    }
+    if (spec.mcp?.rel) {
+      managed.add(spec.mcp.rel);
+    }
+  }
+  return Array.from(managed);
+};
+
 export const defaultManaged = (): ManagedFile => ({
   version: 1,
-  managed: [
-    "CLAUDE.md",
-    "AGENTS.md",
-    ".claude/settings.json",
-    ".codex/config.toml",
-    "opencode.json",
-    ".mcp.json",
-    ".claude/**",
-    ".opencode/**",
-    ".codex/**"
-  ],
+  managed: Array.from(new Set([...legacyManaged, ...managedFromSpecs()])).sort(),
   adopted: {}
 });
 

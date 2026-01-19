@@ -4,7 +4,7 @@ import { loadWorkspace, validateWorkspace } from "../../core/model/workspace";
 import { planWorkspace } from "../../core/planner/plan";
 import { exists } from "../../io/fs";
 import type { PlanOptions, TargetName } from "../../core/model/plan";
-import { resolveAllAdapterPaths, type AllAdapterPaths } from "../../adapters/index";
+import { resolveAllAdapterPaths } from "../../adapters/index";
 
 export type FileStatus = "synced" | "outdated" | "missing" | "unmanaged";
 
@@ -23,34 +23,6 @@ export type StatusReport = {
   pendingCopies: number;
   pendingRemoves: number;
   warnings: string[];
-};
-
-const getInstructionPath = (
-  adapters: AllAdapterPaths,
-  target: TargetName
-) => {
-  switch (target) {
-    case "claude":
-      return adapters.claude.instructionPath ?? null;
-    case "codex":
-      return adapters.codex.instructionPath ?? null;
-    case "opencode":
-      return null;
-  }
-};
-
-const getSkillsRoot = (
-  adapters: AllAdapterPaths,
-  target: TargetName
-) => {
-  switch (target) {
-    case "claude":
-      return adapters.claude.skillsRoot;
-    case "opencode":
-      return adapters.opencode.skillsRoot;
-    case "codex":
-      return adapters.codex.skillsRoot;
-  }
 };
 
 export const statusCommand = (repoRoot: string, options: PlanOptions) =>
@@ -124,8 +96,12 @@ export const statusCommand = (repoRoot: string, options: PlanOptions) =>
       const enabled =
         ws.cfg.targets[target as keyof typeof ws.cfg.targets].enabled;
 
-      const instructionPath = getInstructionPath(adapters, target);
-      const skillsRootPath = getSkillsRoot(adapters, target);
+      const adapter = adapters[target];
+      const instructionPath =
+        adapter.instructionMode === "generated"
+          ? adapter.instructionPath ?? null
+          : null;
+      const skillsRootPath = adapter.skillsRoot;
 
       const instructionExists = instructionPath
         ? yield* _(exists(instructionPath))

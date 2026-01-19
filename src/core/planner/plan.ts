@@ -1,6 +1,6 @@
 import path from "node:path";
 import { Effect } from "effect";
-import { compileInstructions } from "../compile/instructions";
+import { compileInstructions, type InstructionTarget } from "../compile/instructions";
 import type { Workspace } from "../model/workspace";
 import type { Plan, PlanOp, PlanOptions, TargetName, CopyFileOp } from "../model/plan";
 import type { ResolvedAgentCfg } from "../model/config";
@@ -30,6 +30,8 @@ const applyNewlines = (input: string, mode: "lf" | "crlf") =>
 
 const ensureTrailingNewline = (input: string) =>
   input.endsWith("\n") ? input : `${input}\n`;
+
+const ORDERED_TARGETS: TargetName[] = ["claude", "opencode", "codex"];
 
 type WalkFileEntry = { rel: string; abs: string; mode: number };
 
@@ -120,14 +122,9 @@ const buildSkillTargets = (
   targets: Set<TargetName>
 ) => {
   const result: { name: TargetName; root: string }[] = [];
-  if (targets.has("claude")) {
-    result.push({ name: "claude", root: adapterPaths.claude.skillsRoot });
-  }
-  if (targets.has("opencode")) {
-    result.push({ name: "opencode", root: adapterPaths.opencode.skillsRoot });
-  }
-  if (targets.has("codex")) {
-    result.push({ name: "codex", root: adapterPaths.codex.skillsRoot });
+  for (const name of ORDERED_TARGETS) {
+    if (!targets.has(name)) continue;
+    result.push({ name, root: adapterPaths[name].skillsRoot });
   }
   const dedup = new Map<string, { name: string; root: string }>();
   for (const entry of result) {
@@ -138,6 +135,38 @@ const buildSkillTargets = (
   return Array.from(dedup.values()).sort((a, b) =>
     a.root.localeCompare(b.root)
   );
+};
+
+const buildInstructionTargets = (
+  adapterPaths: AllAdapterPaths,
+  targets: Set<TargetName>
+): InstructionTarget[] => {
+  const result: InstructionTarget[] = [];
+  for (const name of ORDERED_TARGETS) {
+    if (!targets.has(name)) continue;
+    const adapter = adapterPaths[name];
+    if (adapter.instructionMode !== "generated" || !adapter.instructionPath) {
+      continue;
+    }
+    const title = adapter.instructionTitle ?? "Agent Instructions";
+    result.push({ path: adapter.instructionPath, title });
+  }
+  return result;
+};
+
+const collectMcpPaths = (
+  adapterPaths: AllAdapterPaths,
+  targets: Set<TargetName>
+) => {
+  const paths = new Set<string>();
+  for (const name of ORDERED_TARGETS) {
+    if (!targets.has(name)) continue;
+    const mcpPath = adapterPaths[name].mcpConfigPath;
+    if (mcpPath) {
+      paths.add(mcpPath);
+    }
+  }
+  return paths;
 };
 
 const diffDir = (
@@ -216,23 +245,9 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
     const targets = resolveTargets(ws.cfg, options);
     const managedData = yield* _(readManaged(ws.repoRoot));
     const adapterPaths = yield* _(resolveAllAdapterPaths(ws.repoRoot));
-    const expectedOutputs = new Set(
-      [
-        adapterPaths.claude.instructionPath,
-        adapterPaths.codex.instructionPath,
-        adapterPaths.claude.mcpConfigPath
-      ]
-    );
-
+    const instructionTargets = buildInstructionTargets(adapterPaths, targets);
     const instructionOutputs = yield* _(
-      compileInstructions(ws.cfg, ws.instructions, {
-        claude: targets.has("claude")
-          ? adapterPaths.claude.instructionPath
-          : undefined,
-        codex: targets.has("codex")
-          ? adapterPaths.codex.instructionPath
-          : undefined
-      })
+      compileInstructions(ws.cfg, ws.instructions, instructionTargets)
     );
 
     const normalizeOutputContent = (input: string) =>
@@ -241,12 +256,23 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
         ws.cfg.output.newlines
       );
 
+    const mcpPaths = collectMcpPaths(adapterPaths, targets);
+    const expectedOutputs = new Set<string>();
+    for (const target of instructionTargets) {
+      expectedOutputs.add(target.path);
+    }
+    for (const mcpPath of mcpPaths) {
+      expectedOutputs.add(mcpPath);
+    }
+
     const extraOutputs: { path: string; content: string }[] = [];
-    if (ws.mcp && targets.size > 0) {
-      extraOutputs.push({
-        path: adapterPaths.claude.mcpConfigPath,
-        content: normalizeOutputContent(ws.mcp.content)
-      });
+    if (ws.mcp && mcpPaths.size > 0) {
+      for (const mcpPath of mcpPaths) {
+        extraOutputs.push({
+          path: mcpPath,
+          content: normalizeOutputContent(ws.mcp.content)
+        });
+      }
     }
 
     const warnings: string[] = [];
@@ -336,23 +362,11 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
       }
     }
 
-    const targetDirMappings = [
-      {
-        name: "claude" as TargetName,
-        source: path.join(ws.root, "targets", "claude"),
-        dest: path.join(ws.repoRoot, ".claude")
-      },
-      {
-        name: "opencode" as TargetName,
-        source: path.join(ws.root, "targets", "opencode"),
-        dest: path.join(ws.repoRoot, ".opencode")
-      },
-      {
-        name: "codex" as TargetName,
-        source: path.join(ws.root, "targets", "codex"),
-        dest: path.join(ws.repoRoot, ".codex")
-      }
-    ];
+    const targetDirMappings = ORDERED_TARGETS.map((name) => ({
+      name,
+      source: path.join(ws.root, "targets", name),
+      dest: adapterPaths[name].targetsRoot
+    }));
 
     for (const mapping of targetDirMappings) {
       if (!targets.has(mapping.name)) continue;

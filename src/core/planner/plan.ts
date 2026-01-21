@@ -118,7 +118,7 @@ const planWriteFile = (
   });
 
 const buildSkillTargets = (
-  adapterPaths: AllAdapterPaths,
+  adapterPaths: AllAdapterPaths<TargetName>,
   targets: Set<TargetName>
 ) => {
   const result: { name: TargetName; root: string }[] = [];
@@ -138,7 +138,7 @@ const buildSkillTargets = (
 };
 
 const buildInstructionTargets = (
-  adapterPaths: AllAdapterPaths,
+  adapterPaths: AllAdapterPaths<TargetName>,
   targets: Set<TargetName>
 ): InstructionTarget[] => {
   const result: InstructionTarget[] = [];
@@ -155,7 +155,7 @@ const buildInstructionTargets = (
 };
 
 const collectMcpPaths = (
-  adapterPaths: AllAdapterPaths,
+  adapterPaths: AllAdapterPaths<TargetName>,
   targets: Set<TargetName>
 ) => {
   const paths = new Set<string>();

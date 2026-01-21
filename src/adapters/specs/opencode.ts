@@ -7,6 +7,6 @@ export const opencodeSpec: AdapterSpec<"opencode"> = {
     mode: "in-targets"
   },
   skills: { rel: ".opencode/skill" },
-  targets: { rel: ".opencode", excludeDirs: ["skill"] },
+  targets: { rel: ".opencode" },
   mcp: { rel: ".mcp.json" }
 };

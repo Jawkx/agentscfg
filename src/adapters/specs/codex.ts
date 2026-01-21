@@ -8,6 +8,6 @@ export const codexSpec: AdapterSpec<"codex"> = {
     title: "Agent Instructions"
   },
   skills: { rel: ".codex/skills" },
-  targets: { rel: ".codex", excludeDirs: ["skills"] },
+  targets: { rel: ".codex" },
   mcp: { rel: ".mcp.json" }
 };

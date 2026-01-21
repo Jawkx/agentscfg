@@ -8,6 +8,6 @@ export const claudeSpec: AdapterSpec<"claude"> = {
     title: "Claude Instructions"
   },
   skills: { rel: ".claude/skills" },
-  targets: { rel: ".claude", excludeDirs: ["skills"] },
+  targets: { rel: ".claude" },
   mcp: { rel: ".mcp.json" }
 };

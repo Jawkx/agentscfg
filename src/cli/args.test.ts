@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { parseArgs, parseTargets, buildOptions } from "./args";
+import { InvalidConfig } from "../core/model/errors";
 
 describe("parseArgs", () => {
   test("parses command only", () => {
@@ -47,35 +48,47 @@ describe("parseArgs", () => {
 
 describe("parseTargets", () => {
   test("returns undefined for undefined input", () => {
-    expect(parseTargets(undefined)).toBeUndefined();
+    expect(parseTargets(undefined)).toEqual({ targets: undefined, invalid: [] });
   });
 
   test("returns undefined for empty string", () => {
-    expect(parseTargets("")).toBeUndefined();
+    expect(parseTargets("")).toEqual({ targets: undefined, invalid: [] });
   });
 
   test("parses single target", () => {
     const result = parseTargets("claude");
-    expect(result).toEqual(new Set(["claude"]));
+    expect(result).toEqual({ targets: new Set(["claude"]), invalid: [] });
   });
 
   test("parses multiple targets", () => {
     const result = parseTargets("claude,opencode,codex");
-    expect(result).toEqual(new Set(["claude", "opencode", "codex"]));
+    expect(result).toEqual({
+      targets: new Set(["claude", "opencode", "codex"]),
+      invalid: []
+    });
   });
 
   test("handles whitespace", () => {
     const result = parseTargets("claude, opencode , codex");
-    expect(result).toEqual(new Set(["claude", "opencode", "codex"]));
+    expect(result).toEqual({
+      targets: new Set(["claude", "opencode", "codex"]),
+      invalid: []
+    });
   });
 
   test("ignores invalid targets", () => {
     const result = parseTargets("claude,invalid,opencode");
-    expect(result).toEqual(new Set(["claude", "opencode"]));
+    expect(result).toEqual({
+      targets: new Set(["claude", "opencode"]),
+      invalid: ["invalid"]
+    });
   });
 
   test("returns undefined if all targets invalid", () => {
-    expect(parseTargets("invalid,unknown")).toBeUndefined();
+    expect(parseTargets("invalid,unknown")).toEqual({
+      targets: undefined,
+      invalid: ["invalid", "unknown"]
+    });
   });
 });
 
@@ -104,5 +117,21 @@ describe("buildOptions", () => {
     expect(result.adopt).toBe(true);
     expect(result.force).toBe(true);
     expect(result.allowDirty).toBe(true);
+  });
+
+  test("throws on invalid --to target", () => {
+    expect(() =>
+      buildOptions({
+        "--to": "claude,invalid"
+      })
+    ).toThrow(InvalidConfig);
+  });
+
+  test("throws when --to has no valid targets", () => {
+    expect(() =>
+      buildOptions({
+        "--to": "invalid"
+      })
+    ).toThrow(InvalidConfig);
   });
 });

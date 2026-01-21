@@ -1,8 +1,8 @@
 import path from "node:path";
 import { Effect } from "effect";
-import { exists, readdir, rm } from "../../io/fs";
-import { readManaged, defaultManaged, type ManagedFile } from "../../core/managed/managed";
-import { WorkspaceMissing } from "../../core/model/errors";
+import { exists, rm } from "../../io/fs";
+import { readManaged, type ManagedFile } from "../../core/managed/managed";
+import { OwnershipError, WorkspaceMissing } from "../../core/model/errors";
 
 export type CleanResult = {
   removed: string[];
@@ -47,8 +47,16 @@ export const cleanCommand = (repoRoot: string, dryRun: boolean) =>
       );
     }
 
-    // Read managed data or use defaults
-    const managedData = (yield* _(readManaged(repoRoot))) ?? defaultManaged();
+    const managedData = yield* _(readManaged(repoRoot));
+    if (!managedData) {
+      return yield* _(
+        Effect.fail(
+          new OwnershipError(
+            "Managed tracking missing. Run gen with --adopt to establish ownership."
+          )
+        )
+      );
+    }
 
     // Expand managed patterns to actual paths
     const pathsToRemove = yield* _(expandManagedPaths(repoRoot, managedData));

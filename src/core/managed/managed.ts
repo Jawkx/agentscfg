@@ -13,14 +13,6 @@ export type ManagedFile = {
 export const managedPath = (repoRoot: string) =>
   path.join(repoRoot, ".agentscfg", ".managed.json");
 
-const legacyManaged = [
-  "CLAUDE.md",
-  "AGENTS.md",
-  ".claude/settings.json",
-  ".codex/config.toml",
-  "opencode.json"
-];
-
 const managedFromSpecs = () => {
   const managed = new Set<string>();
   for (const spec of Object.values(adapterSpecs)) {
@@ -37,7 +29,7 @@ const managedFromSpecs = () => {
 
 export const defaultManaged = (): ManagedFile => ({
   version: 1,
-  managed: Array.from(new Set([...legacyManaged, ...managedFromSpecs()])).sort(),
+  managed: Array.from(new Set(managedFromSpecs())).sort(),
   adopted: {}
 });
 

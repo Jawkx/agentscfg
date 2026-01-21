@@ -12,16 +12,13 @@ const defaultConfig = `{
     "codex": { "enabled": true }
   },
   "output": {
-    "newlines": "lf",
-    "charset": "utf-8"
+    "newlines": "lf"
   },
   "managed": {
-    "mode": "guided",
     "allowRemove": false
   },
   "instructions": {
-    "includeProjectSection": true,
-    "headerStyle": "generated"
+    "includeProjectSection": true
   }
 }
 `;

@@ -19,8 +19,7 @@ export type PlanOp =
       managed: boolean;
     }
   | { type: "CopyDir"; from: string; to: string; files: CopyFileOp[] }
-  | { type: "RemovePath"; path: string }
-  | { type: "Warn"; message: string };
+  | { type: "RemovePath"; path: string };
 
 export type Plan = {
   ops: PlanOp[];

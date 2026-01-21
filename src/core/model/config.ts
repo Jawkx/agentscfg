@@ -11,18 +11,15 @@ export const TargetsSchema = Schema.Struct({
 });
 
 export const OutputSchema = Schema.Struct({
-  newlines: Schema.optional(Schema.Union(Schema.Literal("lf"), Schema.Literal("crlf"))),
-  charset: Schema.optional(Schema.Literal("utf-8"))
+  newlines: Schema.optional(Schema.Union(Schema.Literal("lf"), Schema.Literal("crlf")))
 });
 
 export const ManagedSchema = Schema.Struct({
-  mode: Schema.optional(Schema.Union(Schema.Literal("guided"), Schema.Literal("strict"))),
   allowRemove: Schema.optional(Schema.Boolean)
 });
 
 export const InstructionsSchema = Schema.Struct({
-  includeProjectSection: Schema.optional(Schema.Boolean),
-  headerStyle: Schema.optional(Schema.Literal("generated"))
+  includeProjectSection: Schema.optional(Schema.Boolean)
 });
 
 export const AgentCfgSchema = Schema.Struct({
@@ -44,15 +41,12 @@ export type ResolvedAgentCfg = {
   };
   output: {
     newlines: "lf" | "crlf";
-    charset: "utf-8";
   };
   managed: {
-    mode: "guided" | "strict";
     allowRemove: boolean;
   };
   instructions: {
     includeProjectSection: boolean;
-    headerStyle: "generated";
   };
 };
 
@@ -65,16 +59,13 @@ export const withDefaults = (cfg: AgentCfg): ResolvedAgentCfg => {
       codex: { enabled: cfg.targets?.codex?.enabled ?? true }
     },
     output: {
-      newlines: cfg.output?.newlines ?? "lf",
-      charset: "utf-8"
+      newlines: cfg.output?.newlines ?? "lf"
     },
     managed: {
-      mode: cfg.managed?.mode ?? "guided",
       allowRemove: cfg.managed?.allowRemove ?? false
     },
     instructions: {
-      includeProjectSection: cfg.instructions?.includeProjectSection ?? true,
-      headerStyle: "generated"
+      includeProjectSection: cfg.instructions?.includeProjectSection ?? true
     }
   };
 };

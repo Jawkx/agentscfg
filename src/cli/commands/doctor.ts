@@ -71,6 +71,7 @@ export const doctorCommand = (repoRoot: string) =>
     const outputPathSet = new Set<string>();
     const targetNames = ["claude", "opencode", "codex"] as const;
     for (const name of targetNames) {
+      if (!targets[name]) continue;
       const adapter = adapters[name];
       outputPathSet.add(adapter.targetsRoot);
       outputPathSet.add(adapter.skillsRoot);

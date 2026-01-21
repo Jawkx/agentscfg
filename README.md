@@ -81,10 +81,13 @@ MCP config:
 ## Managed Files
 
 - Generated files include a `agentscfg:generated ... sha256=...` marker.
-- Guided mode (default) will not overwrite unmanaged files unless you pass
-  `--adopt` or the file already contains the marker.
+- By default, gen will not overwrite unmanaged files unless you pass `--adopt`
+  or the file already contains the marker.
 - If a generated file's hash marker does not match, gen refuses to overwrite
   unless `--force` is provided.
+- `--remove` is disabled unless `managed.allowRemove` is set to true.
+- Managed tracking is stored in `.agentscfg/.managed.json`. If it's missing, run
+  `agentscfg gen --adopt` to create it.
 - `gen` refuses to run on a dirty git working tree unless `--allow-dirty` is set.
 
 ## Tips

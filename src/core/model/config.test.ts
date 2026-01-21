@@ -14,16 +14,13 @@ describe("withDefaults", () => {
         codex: { enabled: true }
       },
       output: {
-        newlines: "lf",
-        charset: "utf-8"
+        newlines: "lf"
       },
       managed: {
-        mode: "guided",
         allowRemove: false
       },
       instructions: {
-        includeProjectSection: true,
-        headerStyle: "generated"
+        includeProjectSection: true
       }
     });
   });
@@ -39,7 +36,6 @@ describe("withDefaults", () => {
         newlines: "crlf"
       },
       managed: {
-        mode: "strict",
         allowRemove: true
       }
     };
@@ -49,7 +45,6 @@ describe("withDefaults", () => {
     expect(resolved.targets.codex.enabled).toBe(true);
     expect(resolved.targets.opencode.enabled).toBe(true); // default
     expect(resolved.output.newlines).toBe("crlf");
-    expect(resolved.managed.mode).toBe("strict");
     expect(resolved.managed.allowRemove).toBe(true);
   });
 
@@ -63,6 +58,5 @@ describe("withDefaults", () => {
     const resolved = withDefaults(cfg);
 
     expect(resolved.instructions.includeProjectSection).toBe(false);
-    expect(resolved.instructions.headerStyle).toBe("generated");
   });
 });

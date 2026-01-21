@@ -6,7 +6,7 @@ import { exists } from "../../io/fs";
 import type { PlanOptions, TargetName } from "../../core/model/plan";
 import { resolveAllAdapterPaths } from "../../adapters/index";
 
-export type FileStatus = "synced" | "outdated" | "missing" | "unmanaged";
+export type FileStatus = "synced" | "outdated" | "missing";
 
 export type TargetStatus = {
   name: TargetName;

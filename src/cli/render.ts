@@ -87,8 +87,6 @@ const statusIcon = (status: FileStatus | "synced" | "outdated" | "missing") => {
       return yellow("○");
     case "missing":
       return red("✗");
-    case "unmanaged":
-      return cyan("?");
     default:
       return " ";
   }

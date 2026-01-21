@@ -5,6 +5,7 @@ import type { Workspace } from "../model/workspace";
 import type { Plan, PlanOp, PlanOptions, TargetName, CopyFileOp } from "../model/plan";
 import type { ResolvedAgentCfg } from "../model/config";
 import type { IoError } from "../model/errors";
+import { InvalidConfig } from "../model/errors";
 import { exists, readFileString, readdir, stat } from "../../io/fs";
 import { sha256File } from "../../io/hash";
 import { extractMarkerSha } from "../managed/marker";
@@ -242,6 +243,17 @@ const resolveTargets = (cfg: ResolvedAgentCfg, options: PlanOptions) => {
 
 export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
   Effect.gen(function* (_) {
+    if (options.remove && !ws.cfg.managed.allowRemove) {
+      return yield* _(
+        Effect.fail(
+          new InvalidConfig(
+            "Removal disabled. Set managed.allowRemove=true to use --remove."
+          )
+        )
+      );
+    }
+
+    const removeEnabled = options.remove && ws.cfg.managed.allowRemove;
     const targets = resolveTargets(ws.cfg, options);
     const managedData = yield* _(readManaged(ws.repoRoot));
     const adapterPaths = yield* _(resolveAllAdapterPaths(ws.repoRoot));
@@ -349,7 +361,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
           continue;
         }
 
-        const diffOps = yield* _(diffDir(skill.dir, destDir, !!options.remove));
+        const diffOps = yield* _(diffDir(skill.dir, destDir, removeEnabled));
         if (diffOps.length > 0) {
           mkdirs.add(destDir);
           ops.push({
@@ -392,7 +404,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
         continue;
       }
 
-      const diffOps = yield* _(diffDir(mapping.source, mapping.dest, !!options.remove));
+      const diffOps = yield* _(diffDir(mapping.source, mapping.dest, removeEnabled));
       if (diffOps.length > 0) {
         mkdirs.add(mapping.dest);
         ops.push({
@@ -404,7 +416,7 @@ export const planWorkspace = (ws: Workspace, options: PlanOptions) =>
       }
     }
 
-    if (options.remove) {
+    if (removeEnabled) {
       const skillNames = new Set(ws.skills.map((skill) => skill.name));
       for (const target of skillTargets) {
         if (!(yield* _(exists(target.root)))) continue;

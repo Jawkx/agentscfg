@@ -9,7 +9,6 @@ config for Claude Code, OpenCode, and Codex CLI.
 npm install -g agentscfg
 # or
 npx agentscfg <command>
-bunx agentscfg <command>
 ```
 
 ## Quick Start
@@ -104,7 +103,8 @@ CLAUDE.md
 ## Development
 
 ```bash
-bun install
-bun test
-bun run build
+npm install
+npm test
+npm run build
+npm run tsc
 ```

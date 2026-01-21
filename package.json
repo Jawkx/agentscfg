@@ -13,12 +13,14 @@
   ],
   "scripts": {
     "build": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --target=node18 --outfile=dist/cli.cjs --banner:js=\"#!/usr/bin/env node\" --external:jsonc-parser",
-    "test": "bun test",
+    "test": "vitest run",
+    "tsc": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run build && npm test"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "esbuild": "^0.20.2"
+    "esbuild": "^0.20.2",
+    "typescript": "^5.0.0",
+    "vitest": "^1.6.0"
   },
   "peerDependencies": {
     "typescript": "^5"

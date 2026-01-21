@@ -2,17 +2,6 @@ import { spawn } from "node:child_process";
 import { Effect } from "effect";
 import { IoError } from "../core/model/errors";
 
-type BunLike = {
-  spawn: (
-    cmd: string[],
-    opts: { cwd: string; stdout: "pipe"; stderr: "pipe" }
-  ) => {
-    stdout: ReadableStream;
-    stderr: ReadableStream;
-    exited: Promise<number>;
-  };
-};
-
 const runGitNode = (args: string[], cwd: string) =>
   new Promise<string>((resolve, reject) => {
     const proc = spawn("git", args, { cwd });
@@ -43,26 +32,7 @@ const runGitNode = (args: string[], cwd: string) =>
     });
   });
 
-const runGitBun = async (args: string[], cwd: string, Bun: BunLike) => {
-  const proc = Bun.spawn(["git", ...args], { cwd, stdout: "pipe", stderr: "pipe" });
-  const [stdout, stderr] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text()
-  ]);
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    throw new IoError(`git ${args.join(" ")} failed: ${stderr.trim()}`);
-  }
-  return stdout;
-};
-
-const runGit = async (args: string[], cwd: string) => {
-  const bun = (globalThis as unknown as { Bun?: BunLike }).Bun;
-  if (bun) {
-    return runGitBun(args, cwd, bun);
-  }
-  return runGitNode(args, cwd);
-};
+const runGit = (args: string[], cwd: string) => runGitNode(args, cwd);
 
 export const isGitRepo = (repoRoot: string) =>
   Effect.tryPromise({

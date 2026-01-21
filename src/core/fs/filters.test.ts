@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { isExcludedPath, shouldIncludePath } from "./filters";
 
 describe("isExcludedPath", () => {

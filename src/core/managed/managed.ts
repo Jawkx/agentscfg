@@ -2,7 +2,7 @@ import path from "node:path";
 import { Effect } from "effect";
 import { exists, readFileString, writeFileAtomic } from "../../io/fs";
 import { IoError } from "../model/errors";
-import { adapterSpecs } from "../../adapters/specs";
+import { adapterSpecs } from "../../adapters";
 
 export type ManagedFile = {
   version: 1;

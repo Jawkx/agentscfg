@@ -8,10 +8,10 @@ const toRelParts = (rel: string) =>
 const joinRel = (repoRoot: string, rel: string) =>
   path.join(repoRoot, ...toRelParts(rel));
 
-export const resolveAdapterPathsFromSpec = (
+export const resolveAdapterPathsFromSpec = <Name extends string>(
   repoRoot: string,
-  spec: AdapterSpec
-): Effect.Effect<AdapterPaths, never, never> =>
+  spec: AdapterSpec<Name>
+): Effect.Effect<AdapterPaths<Name>, never, never> =>
   Effect.sync(() => {
     const instructionMode: InstructionMode = spec.instruction?.mode ?? "none";
     return {

@@ -1,26 +1,32 @@
 import { Effect } from "effect";
-import type { AdapterName, AdapterPaths, AllAdapterPaths } from "./types";
-import { adapterSpecs } from "./specs";
+import type { AdapterPaths, AllAdapterPaths } from "./types";
 import { resolveAdapterPathsFromSpec } from "./paths";
+import { adapterSpecs, adapterSpecList } from "./specs";
+import type { AdapterName } from "./specs";
 
 export type {
-  AdapterName,
   AdapterPaths,
   AllAdapterPaths,
   AdapterSpec,
   InstructionMode
 } from "./types";
-export { adapterSpecs } from "./specs";
+export type { AdapterName } from "./specs";
+export { adapterSpecs, adapterSpecList } from "./specs";
 
 export const resolveAdapterPaths = (repoRoot: string, name: AdapterName) =>
   resolveAdapterPathsFromSpec(repoRoot, adapterSpecs[name]);
 
 export const resolveAllAdapterPaths = (repoRoot: string) => {
-  const effects = {
-    claude: resolveAdapterPathsFromSpec(repoRoot, adapterSpecs.claude),
-    opencode: resolveAdapterPathsFromSpec(repoRoot, adapterSpecs.opencode),
-    codex: resolveAdapterPathsFromSpec(repoRoot, adapterSpecs.codex)
-  } satisfies Record<AdapterName, Effect.Effect<AdapterPaths, never, never>>;
+  const effects = Object.fromEntries(
+    adapterSpecList.map((spec) => [
+      spec.name,
+      resolveAdapterPathsFromSpec(repoRoot, spec)
+    ])
+  ) as Record<AdapterName, Effect.Effect<AdapterPaths<AdapterName>, never, never>>;
 
-  return Effect.all(effects) as Effect.Effect<AllAdapterPaths, never, never>;
+  return Effect.all(effects) as Effect.Effect<
+    AllAdapterPaths<AdapterName>,
+    never,
+    never
+  >;
 };

@@ -1,5 +1,3 @@
-export type AdapterName = "claude" | "opencode" | "codex";
-
 export type InstructionMode = "generated" | "in-targets" | "none";
 
 export type InstructionSpec = {
@@ -8,16 +6,16 @@ export type InstructionSpec = {
   title?: string;
 };
 
-export type AdapterSpec = {
-  name: AdapterName;
+export type AdapterSpec<Name extends string = string> = {
+  name: Name;
   instruction?: InstructionSpec;
   skills: { rel: string };
   targets: { rel: string; excludeDirs?: string[] };
   mcp?: { rel: string };
 };
 
-export type AdapterPaths = {
-  name: AdapterName;
+export type AdapterPaths<Name extends string = string> = {
+  name: Name;
   instructionPath?: string;
   instructionMode: InstructionMode;
   instructionTitle?: string;
@@ -27,4 +25,7 @@ export type AdapterPaths = {
   mcpConfigPath?: string;
 };
 
-export type AllAdapterPaths = Record<AdapterName, AdapterPaths>;
+export type AllAdapterPaths<Name extends string = string> = Record<
+  Name,
+  AdapterPaths<Name>
+>;

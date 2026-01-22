@@ -23,12 +23,12 @@ describe("parseArgs", () => {
   });
 
   test("parses --to with value", () => {
-    const result = parseArgs(["plan", "--to", "claude,opencode"]);
+    const result = parseArgs(["gen", "--to", "claude,opencode"]);
     expect(result.flags["--to"]).toBe("claude,opencode");
   });
 
   test("parses --flag=value syntax", () => {
-    const result = parseArgs(["plan", "--to=claude"]);
+    const result = parseArgs(["gen", "--to=claude"]);
     expect(result.flags["--to"]).toBe("claude");
   });
 
@@ -100,7 +100,8 @@ describe("buildOptions", () => {
       remove: false,
       adopt: false,
       force: false,
-      allowDirty: false
+      allowDirty: false,
+      dryRun: false
     });
   });
 
@@ -110,13 +111,15 @@ describe("buildOptions", () => {
       "--remove": true,
       "--adopt": true,
       "--force": true,
-      "--allow-dirty": true
+      "--allow-dirty": true,
+      "--dry-run": true
     });
     expect(result.targets).toEqual(new Set(["claude", "codex"]));
     expect(result.remove).toBe(true);
     expect(result.adopt).toBe(true);
     expect(result.force).toBe(true);
     expect(result.allowDirty).toBe(true);
+    expect(result.dryRun).toBe(true);
   });
 
   test("throws on invalid --to target", () => {

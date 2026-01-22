@@ -1,5 +1,4 @@
 import path from "node:path";
-import fs from "node:fs/promises";
 import { Effect } from "effect";
 import { describe, expect, test } from "vitest";
 import { genCommand } from "./gen";
@@ -52,6 +51,17 @@ describe("genCommand", () => {
         await fileExists(path.join(repoRoot, ".agentscfg", ".managed.json"))
       ).toBe(true);
       expect(await fileExists(path.join(repoRoot, "AGENTS.md"))).toBe(true);
+    } finally {
+      await cleanupDir(repoRoot);
+    }
+  });
+
+  test("dry-run does not write outputs", async () => {
+    const repoRoot = await makeTempDir();
+    try {
+      await writeWorkspace(repoRoot);
+      await genCommand(repoRoot, { dryRun: true }).pipe(Effect.runPromise);
+      expect(await fileExists(path.join(repoRoot, "AGENTS.md"))).toBe(false);
     } finally {
       await cleanupDir(repoRoot);
     }

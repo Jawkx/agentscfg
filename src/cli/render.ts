@@ -33,6 +33,43 @@ export const renderPlanSummary = (plan: Plan) => {
   return `Plan: ${parts.join(", ")}`;
 };
 
+const formatRelPath = (repoRoot: string, absPath: string) =>
+  path.relative(repoRoot, absPath).replace(/\\/g, "/");
+
+export const renderPlanDetails = (repoRoot: string, plan: Plan) => {
+  if (plan.ops.length === 0) {
+    return dim("No changes planned");
+  }
+
+  const lines: string[] = [];
+  lines.push(bold("Planned changes:"));
+  for (const op of plan.ops) {
+    if (op.type === "Mkdirp") {
+      lines.push(cyan(`  mkdir ${formatRelPath(repoRoot, op.path)}`));
+    }
+    if (op.type === "WriteFile") {
+      const rel = formatRelPath(repoRoot, op.path);
+      const adoptLabel = op.adopt ? " (adopt)" : "";
+      lines.push(green(`  write ${rel}${adoptLabel}`));
+    }
+    if (op.type === "CopyDir") {
+      const relFrom = formatRelPath(repoRoot, op.from);
+      const relTo = formatRelPath(repoRoot, op.to);
+      lines.push(cyan(`  copy ${relTo} ← ${relFrom}`));
+      for (const file of op.files) {
+        const prefix =
+          file.kind === "add" ? "+" : file.kind === "remove" ? "-" : "~";
+        lines.push(`    ${prefix} ${file.rel}`);
+      }
+    }
+    if (op.type === "RemovePath") {
+      lines.push(red(`  remove ${formatRelPath(repoRoot, op.path)}`));
+    }
+  }
+
+  return lines.join("\n");
+};
+
 export const renderWarnings = (warnings: string[]) =>
   warnings.length > 0
     ? `${yellow("Warnings:")}\n${warnings.map((w) => yellow(`  - ${w}`)).join("\n")}`

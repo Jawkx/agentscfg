@@ -3,7 +3,6 @@ import { findRepoRoot } from "../io/repo";
 import { version } from "../../package.json";
 import { initCommand } from "./commands/init";
 import { validateCommand } from "./commands/validate";
-import { planCommand } from "./commands/plan";
 import { diffCommand } from "./commands/diff";
 import { genCommand } from "./commands/gen";
 import { doctorCommand } from "./commands/doctor";
@@ -12,6 +11,7 @@ import { cleanCommand } from "./commands/clean";
 import { importCommand } from "./commands/import";
 import {
   renderPlanSummary,
+  renderPlanDetails,
   renderWarnings,
   renderDoctorReport,
   renderStatusReport,
@@ -110,19 +110,6 @@ const run = async () => {
       info("Validation ok");
       return;
     }
-    case "plan": {
-      const plan = await planCommand(repoRoot, buildOptions(flags)).pipe(
-        Effect.runPromise
-      );
-      if (flags["--json"]) {
-        console.log(JSON.stringify(plan, null, 2));
-        return;
-      }
-      info(renderPlanSummary(plan));
-      const warnings = renderWarnings(plan.warnings);
-      if (warnings) info(warnings);
-      return;
-    }
     case "diff": {
       const { plan, diff } = await diffCommand(repoRoot, buildOptions(flags)).pipe(
         Effect.runPromise
@@ -133,11 +120,24 @@ const run = async () => {
       console.log(diff || "(no changes)");
       return;
     }
+    case "plan": {
+      error("Command removed. Use 'agentscfg gen --dry-run' instead.");
+      process.exitCode = 1;
+      return;
+    }
     case "gen": {
-      const plan = await genCommand(repoRoot, buildOptions(flags)).pipe(
-        Effect.runPromise
-      );
-      info(renderGenSummary(plan));
+      const options = buildOptions(flags);
+      const plan = await genCommand(repoRoot, options).pipe(Effect.runPromise);
+      if (options.dryRun) {
+        if (flags["--json"]) {
+          console.log(JSON.stringify(plan, null, 2));
+          return;
+        }
+        info(renderPlanSummary(plan));
+        info(renderPlanDetails(repoRoot, plan));
+      } else {
+        info(renderGenSummary(plan));
+      }
       const warnings = renderWarnings(plan.warnings);
       if (warnings) info(warnings);
       return;

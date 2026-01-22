@@ -16,7 +16,7 @@ npx agentscfg <command>
 ```bash
 agentscfg init
 # edit .agentscfg/instructions/* and .agentscfg/skills/*
-agentscfg plan
+agentscfg gen --dry-run
 agentscfg diff
 agentscfg gen
 agentscfg import --from codex
@@ -27,9 +27,8 @@ agentscfg import --from codex
 ```text
 init [--force]
 validate
-plan [--to claude,opencode,codex] [--json]
 diff [--to ...]
-gen [--to ...] [--remove] [--adopt] [--force] [--allow-dirty]
+gen [--to ...] [--remove] [--adopt] [--force] [--allow-dirty] [--dry-run]
 import --from <tool>
 doctor
 ```

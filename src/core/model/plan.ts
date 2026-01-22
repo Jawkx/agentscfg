@@ -32,4 +32,5 @@ export type PlanOptions = {
   adopt?: boolean;
   force?: boolean;
   allowDirty?: boolean;
+  dryRun?: boolean;
 };

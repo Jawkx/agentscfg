@@ -6,7 +6,6 @@ Commands:
   init        Initialize a new .agentscfg workspace
   validate    Validate workspace structure
   status      Show generation status at a glance
-  plan        Show what gen would do without making changes
   diff        Show file diffs for planned changes
   gen         Apply planned changes to target files
   import      Import config from an existing agent setup
@@ -47,22 +46,6 @@ Checks that:
 Example:
   agentscfg validate`;
 
-export const PLAN_HELP = `agentscfg plan - Show what gen would do without making changes
-
-Usage: agentscfg plan [options]
-
-Options:
-  --to <targets>   Comma-separated targets: claude,opencode,codex
-                   Default: all enabled targets
-  --json           Output plan as JSON
-
-Shows files that would be created, updated, or removed.
-
-Examples:
-  agentscfg plan
-  agentscfg plan --to claude
-  agentscfg plan --to claude,opencode --json`;
-
 export const DIFF_HELP = `agentscfg diff - Show file diffs for planned changes
 
 Usage: agentscfg diff [options]
@@ -88,6 +71,8 @@ Options:
   --adopt            Adopt unmanaged files that match expected content
   --force            Overwrite unmanaged files (use with caution)
   --allow-dirty      Allow gen even with uncommitted git changes
+  --dry-run          Show what would change without writing files
+  --json             Output plan as JSON (with --dry-run)
 
 Safety:
   --remove requires managed.allowRemove=true in agentscfg.jsonc.
@@ -100,6 +85,7 @@ Safety:
 
 Examples:
   agentscfg gen
+  agentscfg gen --dry-run
   agentscfg gen --to claude --allow-dirty
   agentscfg gen --remove --adopt`;
 
@@ -179,7 +165,6 @@ export const COMMAND_HELP: Record<string, string> = {
   init: INIT_HELP,
   validate: VALIDATE_HELP,
   status: STATUS_HELP,
-  plan: PLAN_HELP,
   diff: DIFF_HELP,
   gen: GEN_HELP,
   import: IMPORT_HELP,

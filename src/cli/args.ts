@@ -77,6 +77,7 @@ export const buildOptions = (flags: Record<string, string | boolean>): PlanOptio
     remove: Boolean(flags["--remove"]),
     adopt: Boolean(flags["--adopt"]),
     force: Boolean(flags["--force"]),
-    allowDirty: Boolean(flags["--allow-dirty"])
+    allowDirty: Boolean(flags["--allow-dirty"]),
+    dryRun: Boolean(flags["--dry-run"])
   };
 };
